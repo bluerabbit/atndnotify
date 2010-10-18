@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
+<style>
+body{
+	overflow:hidden;
+	background: url(../images/notificationBG.gif) top left repeat;
+	color: #e79300;
+	font-family: Tahoma;
+	font-weight: bold;
+	padding: 0 0 0 5px;
+}
+#img{
+	float:left;
+	max-width:48px;
+	min-width:48px;
+}
+</style>
+<script type="text/javascript">
+chrome.extension.sendRequest({id:location.hash.slice(1)}, function(item){
+	$('#link').attr('href', 'http://atnd.org/events/' + item.event_id);
+	$('#title').text("[" + item.title + "]");
+	$('#message').text(item.msg);
+	$('#img').attr('src', 'chrome-extension://' + location.host + '/images/icon.png');
+});
+</script>
+</head>
+<body>
+	<table border="0" width="100%" cellpadding="0" cellspacing="0">
+	<tr>
+		<td height="70">
+			<a id="link" target="_blank"><img id="img" ></a>
+			<span id="title" ></span><br />
+			<span id="message" ></span>
+		</td>
+	</tr>
+	</table>
+</body>
+</html>

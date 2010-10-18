@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="/js/atnd.js"></script>
+<script type="text/javascript" src="/js/timer.js"></script>
+<script type="text/javascript" src="/js/notification.js"></script>
+<script type="text/javascript">
+localStorage.options = localStorage.options || JSON.stringify({nickname:'', timerMI:15, autoCloseTimeSS:30, eventList:[], notifyList:[]});
+var options = JSON.parse(localStorage.options);
+var timer = new Timer(1000 * 60 * options.timerMI); // n分に一回
+//var timer = new Timer(1000 * options.timerMI); // test
+var notification = new Notification('html/notification.html', 1000 * options.autoCloseTimeSS); // 自動的に閉じる
+function main(options) {
+	console.log(options);
+	if (options.nickname.length == 0) {
+		console.warn("options.nickname error");
+		return;
+	} else if (options.eventList.length == 0) {
+		console.warn("options.eventList error");
+		return;
+	}
+
+	timer.start(function () {
+		console.log("timer run");
+		$.each(options.eventList, function (i, e) {
+			console.debug(e);
+			var atnd = new Atnd(e.event_id);
+			var event = atnd.getEvent();
+			if (event == null) {
+				return;
+			}
+			var eventDate = toDate(event.started_at);
+			// 現在時刻に対して残り何時間かをチェックする
+			var now = new Date()
+			if (now > eventDate) {
+			  return;
+			}
+			if (options.notifyList.length > 0) {
+				var list = options.notifyList;
+				var isSend = true;
+				for (var j = 0; j < list.length; j++) {
+					var configDay = list[j]; // 何日前に通知か？
+					if ($.inArray(configDay, e.notifyZumiList) > -1) {
+						continue;
+					}
+					var sai = (now - eventDate) * -1; // 差分ミリ秒数
+					var time = (1000 * 60 * 60 * 24) * configDay; // 1日
+					if (time >= sai) {
+						if (isSend) {
+							notification.open({event_id:e.event_id, title:event.title, msg:"開催日時：" + eventDate.toISOString().substring(0, 10)});
+							isSend = false;
+						}
+						e.notifyZumiList.push(list[j]);
+						continue;
+					}
+				}
+				localStorage.options = JSON.stringify(options);
+			}
+			if (event.updated_at > e.updated_at) {
+				e.updated_at = event.updated_at;
+				notification.open({event_id:e.event_id, title:event.title, msg:"イベント内容に変更がありました"});
+				localStorage.options = JSON.stringify(options);
+			}
+			if (e.status == 1) {
+				return; // 既に出席
+			}
+			var status = atnd.getStatus(options.nickname);
+			if (status == 1) {
+				e.status = status; // キャンセル待ち→出席
+				localStorage.options = JSON.stringify(options);
+				notification.open({event_id:e.event_id, title:event.title, msg:"参加できるようになりました"});
+			}
+		});
+	});
+
+	chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
+		sendResponse(notification.getItem(message.id));
+	});
+}
+
+// TODO:イベントの日付が過ぎていたらoptions.eventListから要素を削除する
+
+main(options);
+
+function restart() {
+	console.debug("restart");
+	timer.stop();
+	localStorage.options = JSON.stringify(options);
+	main(options);
+}
+
+function toDate(str) {
+	var yyyymmdd = str.substring(0, 10); // 2009-01-31
+	var HhMiSS = str.substring(11, 18); // 20:44:34
+	var time = Date.parse(yyyymmdd + " " + HhMiSS); // "2009/01/31 20:44:34"
+	var date = new Date();
+	date.setTime(time);
+	return date;
+}
+</script>
+</head>
+<body>
+</body>
+</html>

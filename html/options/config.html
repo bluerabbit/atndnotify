@@ -20,7 +20,7 @@
 
 		var options = chrome.extension.getBackgroundPage().options;
 		//console.log(options);
-		$('#nickname').val(options.nickname);
+		$('#user_id').val(options.user_id);
 		$('#autoCloseTimeSS').val(options.autoCloseTimeSS);
 		if (options.eventList.length != 0) {
 			$('#event_id').val(options.eventList[0].event_id);
@@ -28,6 +28,11 @@
 		$('#timerMI').val(options.timerMI);
 		$.each(options.notifyList, function (i, e) {
 			$('#notify' + e).attr('checked', 'checked');
+		});
+
+		$.each(options.eventList, function (i, e) {
+			var link = $('<a>').attr('target', '_blank').attr('href', 'http://atnd.org/events/' + e.event_id).text(e.event_id);
+			$('#eventIdList').append($('<li>').append(link)); // TODO:イベント名を非同期ajaxで取得して表示する
 		});
 
 		function getNotifyList() {
@@ -45,21 +50,9 @@
 				$("#message-success").fadeOut();
 				return;
 			}
-			options.nickname = $('#nickname').val();
+			options.user_id = $('#user_id').val();
 			var event_id = $('#event_id').val();
-			options.eventList = [];
 			var now = new Date();
-			var atnd = new Atnd(event_id);
-			var event = atnd.getEvent();
-			if (event) {
-				console.log(event.title);
-				$("#eventTitle").text("[" + event.title + "]の予定を通知します");
-			} else {
-				$("#eventTitle").text("");
-			}
-			var status = atnd.getStatus(options.nickname) || 0;
-			//console.debug("status:" + status);
-			options.eventList.push({'event_id': event_id, status:status, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString(), notifyZumiList:[]});
 			options.timerMI = $('#timerMI').val();
 			options.autoCloseTimeSS = $('#autoCloseTimeSS').val();
 			options.notifyList = getNotifyList();
@@ -73,21 +66,13 @@
 
 		function validate() {
 			var isError = false;
-			if (isNaN($('#event_id').val())) {
-				$('#event_id').addClass('inp-form-error');
-				$('#event_id_error').show();
+			if ($('#user_id').val().length == 0) {
+				$('#user_id').addClass('inp-form-error');
+				$('#user_id_error').show();
 				isError = true;
 			} else {
-				$('#event_id').removeClass('inp-form-error');
-				$('#event_id_error').hide();
-			}
-			if ($('#nickname').val().length == 0) {
-				$('#nickname').addClass('inp-form-error');
-				$('#nickname_error').show();
-				isError = true;
-			} else {
-				$('#nickname').removeClass('inp-form-error');
-				$('#nickname_error').hide();
+				$('#user_id').removeClass('inp-form-error');
+				$('#user_id_error').hide();
 			}
 			return !isError;
 		}
@@ -167,14 +152,14 @@
 			<!-- start id-form -->
 			<table border="0" cellpadding="0" cellspacing="0"  id="id-form">
 			<tr>
-				<th valign="top">ニックネーム:</th>
-				<td><input type="text" id="nickname" class="inp-form" /></td>
-				<td id="nickname_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※入力して下さい。</div></td>
+				<th valign="top">ユーザID:</th>
+				<td><input type="text" id="user_id" class="inp-form" /></td>
+				<td id="user_id_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※入力して下さい。</div></td>
 			</tr>
 			<tr>
 				<th valign="top">ATNDイベントID:</th>
-				<td><input type="text" id="event_id" class="inp-form"  maxlength="6" /></td>
-				<td id="event_id_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※数字で入力して下さい。</div></td>
+				<td><ul id="eventIdList"></ul></td>
+				<td></td>
 			</tr>
 			<tr>
 				<th valign="top">監視間隔:</th>

@@ -30,14 +30,14 @@ Atnd.prototype = {
 		return result;
 	},
 	// result:status(1:出席、0:キャンセル待ち)
-	getStatus : function(nickname) {
+	getStatus : function(user_id) {
 		var result = null;
 		$.ajax( {
 			type : "GET",
 			url : "http://api.atnd.org/events/users/",
 			data : {
 				"event_id" : this.event_id,
-				"nickname" : nickname,
+				"user_id" : user_id,
 				"format" : "json"
 			},
 			dataType : "json",
@@ -45,7 +45,7 @@ Atnd.prototype = {
 			success : function(json) {
 				if (json.results_returned == "1") {
 					$.each(json.events[0].users, function (i, user) {
-						if (user.nickname == nickname) {
+						if (user.user_id == user_id) {
 							result = user.status;
 						}
 					});

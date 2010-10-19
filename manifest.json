@@ -1,7 +1,7 @@
 {
   "name": "ATND Notify",
   "description": "ATNDで参加予定イベントの開催日が近づくと備忘通知したり、イベントの内容変更や補欠から繰り上がった場合に通知します",
-  "version": "0.10.18",
+  "version": "0.10.20",
   "background_page": "html/background.html",
   "options_page": "html/options/config.html",
   "browser_action": {
@@ -11,9 +11,9 @@
   },
   "content_scripts": [
       {
-        "matches": [ "http://atnd.org/users/*" ],
-        "js": [ "js/jquery-1.4.2.min.js", "js/content_scripts.js" ]
-      }
+          "matches": [ "http://atnd.org/*" ],
+          "js": [ "js/jquery-1.4.2.min.js", "js/content_scripts.js" ]
+       }
   ],
   "icons": {
     "48": "images/icon.png"

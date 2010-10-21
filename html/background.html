@@ -20,6 +20,9 @@ function queryTimerStart() {
 	queryTimer.start(function () {
 		var atnd = new Atnd();
 		options.keywordList.forEach(function (keyword){
+			if (keyword.length == 0) {
+				return;
+			}
 			var events = atnd.find({'keyword':keyword});
 			events.forEach(function (event){
 				if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {

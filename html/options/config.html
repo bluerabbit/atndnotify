@@ -26,6 +26,9 @@
 			$('#event_id').val(options.eventList[0].event_id);
 		}
 		$('#timerMI').val(options.timerMI);
+		if (options.keywordList.length > 0) {
+			$('#keyword').val(options.keywordList[0]);
+		}
 		$.each(options.notifyList, function (i, e) {
 			$('#notify' + e).attr('checked', 'checked');
 		});
@@ -50,6 +53,9 @@
 				$("#message-success").fadeOut();
 				return;
 			}
+			options.keywordList = [];
+			options.keywordList.push($('#keyword').val());
+			options.keywordNotifiedList = [];
 			options.user_id = $('#user_id').val();
 			var event_id = $('#event_id').val();
 			var now = new Date();
@@ -58,6 +64,7 @@
 			options.notifyList = getNotifyList();
 			chrome.extension.getBackgroundPage().options = options;
 			chrome.extension.getBackgroundPage().restart();
+			chrome.extension.getBackgroundPage().queryTimerRestart();
 
 			$("#message-success").fadeOut(function () {
 				$(this).fadeIn();
@@ -160,6 +167,11 @@
 				<th valign="top">ATNDイベントID:</th>
 				<td><ul id="eventIdList"></ul></td>
 				<td></td>
+			</tr>
+			<tr>
+				<th valign="top">キーワード:</th>
+				<td><input type="text" id="keyword" class="inp-form" /></td>
+				<td id="keyword_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※入力して下さい。</div></td>
 			</tr>
 			<tr>
 				<th valign="top">監視間隔:</th>

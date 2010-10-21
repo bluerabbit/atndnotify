@@ -7,11 +7,37 @@
 <script type="text/javascript" src="/js/timer.js"></script>
 <script type="text/javascript" src="/js/notification.js"></script>
 <script type="text/javascript">
-localStorage.options = localStorage.options || JSON.stringify({user_id:'', timerMI:15, autoCloseTimeSS:30, eventList:[], notifyList:[]});
+localStorage.options = localStorage.options || JSON.stringify({user_id:'', timerMI:15, autoCloseTimeSS:30, eventList:[], notifyList:[], keywordNotifiedList:[], keywordList:[]});
 var options = JSON.parse(localStorage.options);
 var timer = new Timer(1000 * 60 * options.timerMI); // n分に一回
 //var timer = new Timer(1000 * options.timerMI); // test
 var notification = new Notification('html/notification.html', 1000 * options.autoCloseTimeSS); // 自動的に閉じる
+
+options.keywordList = options.keywordList || [];
+options.keywordNotifiedList = options.keywordNotifiedList || [];
+var queryTimer = new Timer(1000 * 60 * options.timerMI); // n分に一回
+function queryTimerStart() {
+	queryTimer.start(function () {
+		var atnd = new Atnd();
+		options.keywordList.forEach(function (keyword){
+			var events = atnd.find({'keyword':keyword});
+			events.forEach(function (event){
+				if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
+					notification.open({event_id:event.event_id, title:event.title, msg:keyword + "のイベントが見つかりました。"});
+					options.keywordNotifiedList.push(event.event_id);
+				}
+			});
+		});
+		localStorage.options = JSON.stringify(options);
+	});
+}
+function queryTimerRestart() {
+	console.debug("queryTimerRestart");
+	queryTimer.stop();
+	localStorage.options = JSON.stringify(options);
+	queryTimerStart();
+}
+
 function main(options) {
 	console.log(options);
 	if (options.user_id.length == 0) {
@@ -31,6 +57,10 @@ function main(options) {
 			if (event == null) {
 				return;
 			}
+			e.ended_at = event.ended_at;
+			e.started_at = event.started_at;
+			localStorage.options = JSON.stringify(options);
+
 			var eventDate = toDate(event.started_at);
 			// 現在時刻に対して残り何時間かをチェックする
 			var now = new Date()
@@ -76,9 +106,27 @@ function main(options) {
 	});
 
 }
-// TODO:イベントの日付が過ぎていたらoptions.eventListから要素を削除する
+// イベントの日付が過ぎていたらoptions.eventListから要素を削除する
+function deleteEndedEvent() {
+	var eventList = [];
+	var now = new Date();
+	options.eventList.forEach(function (event) {
+		if (event.ended_at) {
+			var endDate = toDate(event.ended_at);
+			if (now.getTime() < endDate.getTime()) {
+				eventList.push(event);
+			}
+		} else {
+			eventList.push(event);
+		}
+	});
+	options.eventList = eventList;
+	localStorage.options = JSON.stringify(options);
+}
+deleteEndedEvent();
 
 main(options);
+queryTimerStart();
 
 chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 	console.log(message);

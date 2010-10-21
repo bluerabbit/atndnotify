@@ -18,6 +18,7 @@ Timer.prototype = {
 			}, delay);
 			sessionStorage[storageKey] = timerId;
 		})();
+		fn();
 	},
 	stop: function () {
 		sessionStorage[this._id + "/enabled"] = "false";

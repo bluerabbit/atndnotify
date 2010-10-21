@@ -73,7 +73,7 @@
 
 		function validate() {
 			var isError = false;
-			if ($('#user_id').val().length == 0) {
+			if (isNaN($('#user_id').val())) {
 				$('#user_id').addClass('inp-form-error');
 				$('#user_id_error').show();
 				isError = true;
@@ -161,7 +161,7 @@
 			<tr>
 				<th valign="top">ユーザID:</th>
 				<td><input type="text" id="user_id" class="inp-form" /></td>
-				<td id="user_id_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※入力して下さい。</div></td>
+				<td id="user_id_error" style="display: none;"><div class="error-left"></div><div class="error-inner">※数字で入力して下さい。</div></td>
 			</tr>
 			<tr>
 				<th valign="top">ATNDイベントID:</th>

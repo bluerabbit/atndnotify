@@ -53,5 +53,58 @@ Atnd.prototype = {
 			}
 		});
 		return result;
+	},
+	find : function(param) {
+		param['format'] = "json";
+		// 直近三ヶ月を検索対象とする
+		var date = new Date();
+		param['ym'] = toYyyyMm(date) + ',' + toYyyyMm(nextMonth(date)) + ',' + toYyyyMm(nextMonth(date));
+
+		function toYyyyMm(date) {
+			var mm = date.getMonth() + 1;
+			if (mm < 10) mm = "0" + mm;
+			return String(date.getFullYear()) + mm;
+		}
+
+		function nextMonth(date) {
+			date.setMonth(date.getMonth()+1);
+			return date;
+		}
+
+		function toDate(str) {
+			var yyyymmdd = str.substring(0, 10); // 2009-01-31
+			var HhMiSS = str.substring(11, 18); // 20:44:34
+			var time = Date.parse(yyyymmdd + " " + HhMiSS); // "2009/01/31 20:44:34"
+			var date = new Date();
+			date.setTime(time);
+			return date;
+		}
+
+		var result = [];
+		$.ajax( {
+			type : "GET",
+			url : "http://api.atnd.org/events/",
+			data : param,
+			dataType : "json",
+			async : false,
+			success : function(json) {
+				var now = new Date();
+				// 終わってるイベントは除く
+				json.events.forEach(function (event, i) {
+					var endDate = toDate(event.ended_at);
+					if (now.getTime() < endDate.getTime()) {
+						result.push(event);
+					}
+				});
+			},
+			error: function (xhr, errorText, error) {
+				if (xhr.status == 200) {
+					console.warn("Atnd.find error:" + errorText);
+					console.warn(xhr);
+					console.warn(error);
+				}
+			}
+		});
+		return result;
 	}
 };

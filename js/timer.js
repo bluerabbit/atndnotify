@@ -18,7 +18,10 @@ Timer.prototype = {
 			}, delay);
 			sessionStorage[storageKey] = timerId;
 		})();
-		fn();
+		var timerId = setTimeout(function(){
+			fn();
+		}, 100);
+		sessionStorage[storageKey] = timerId;
 	},
 	stop: function () {
 		sessionStorage[this._id + "/enabled"] = "false";

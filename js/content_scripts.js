@@ -6,7 +6,7 @@ function getOptions(fn) {
 }
 
 function setUserIdButton() {
-	var user = $("a[href^='/users/'][href!='/users/profile']:first");
+	var user = $(".header_logged a[href^='/users/'][href!='/users/profile']:first");
 	if (user.length == 0) {
 		return;
 	}

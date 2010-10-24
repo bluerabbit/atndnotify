@@ -6,43 +6,78 @@
 <script type="text/javascript" src="/js/atnd.js"></script>
 <script type="text/javascript" src="/js/timer.js"></script>
 <script type="text/javascript" src="/js/notification.js"></script>
+<script type="text/javascript" src="/js/options.js"></script>
 <script type="text/javascript">
-localStorage.options = localStorage.options || JSON.stringify({user_id:'', timerMI:15, autoCloseTimeSS:30, eventList:[], notifyList:[], keywordNotifiedList:[], keywordList:[]});
-var options = JSON.parse(localStorage.options);
+var options = Options.load();
+var notification = new Notification('html/notification.html', 1000 * options.autoCloseTimeSS);
 var timer = new Timer(1000 * 60 * options.timerMI); // n分に一回
-//var timer = new Timer(1000 * options.timerMI); // test
-var notification = new Notification('html/notification.html', 1000 * options.autoCloseTimeSS); // 自動的に閉じる
-
-options.keywordList = options.keywordList || [];
-options.keywordNotifiedList = options.keywordNotifiedList || [];
-var queryTimer = new Timer(1000 * 60 * options.timerMI); // n分に一回
-function queryTimerStart() {
-	queryTimer.start(function () {
-		var atnd = new Atnd();
-		options.keywordList.forEach(function (keyword){
-			if (keyword.length == 0) {
-				return;
-			}
-			var events = atnd.find({'keyword':keyword});
-			events.forEach(function (event){
-				if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
-					notification.open({event_id:event.event_id, title:event.title, msg:keyword + "のイベントが見つかりました。"});
-					options.keywordNotifiedList.push(event.event_id);
-				}
-			});
-		});
-		localStorage.options = JSON.stringify(options);
+function main(options) {
+	timer.start(function () {
+		console.log("timer run");
+		console.log(options);
+		deleteEndedEvent(options);
+		eventUserStatusNotify(options);
+		eventStartDateNotifyAndEventUpdateNotify(options);
+		keywordNotify(options);
+		options.save();
 	});
 }
-function queryTimerRestart() {
-	console.debug("queryTimerRestart");
-	queryTimer.stop();
-	localStorage.options = JSON.stringify(options);
-	queryTimerStart();
+main(options);
+
+// イベントの開催日時が近づいたら通知、イベントに変更があったら通知
+function eventStartDateNotifyAndEventUpdateNotify(options) {
+	if (options.eventList.length == 0) {
+		console.warn("options.eventList is Not Found");
+		return;
+	} else if (options.notifyList.length == 0) {
+		console.warn("options.notifyList is Not Found");
+		return;
+	}
+
+	$.each(options.eventList, function (i, e) {
+		console.debug(e);
+		var atnd = new Atnd(e.event_id);
+		var event = atnd.getEvent();
+		if (event == null) {
+			return;
+		}
+		e.ended_at = event.ended_at;
+		e.started_at = event.started_at;
+		e.title = event.title;
+
+		// 現在時刻に対して開始時間が残り何時間かをチェックする
+		var eventDate = Atnd.toDate(e.started_at);
+		var now = new Date()
+		if (now > eventDate) {
+		  return;
+		}
+		var list = options.notifyList; // 何日前に通知するか?の設定値
+		var isNotified = false;
+		for (var i = 0; i < list.length; i++) {
+			var configDay = list[i];
+			if ($.inArray(configDay, e.notifyZumiList) > -1) {
+				continue; // 過去に通知済み
+			}
+			var sai = (now - eventDate) * -1; // 差分ミリ秒数
+			var time = (1000 * 60 * 60 * 24) * configDay;
+			if (time >= sai) {
+				if (!isNotified) {
+					notification.open({event_id:e.event_id, title:e.title, msg:"開催日時：" + eventDate.toISOString().substring(0, 10)});
+					isNotified = true;
+				}
+				e.notifyZumiList.push(list[i]);
+				continue;
+			}
+		}
+		if (event.updated_at > e.updated_at) {
+			e.updated_at = event.updated_at;
+			notification.open({event_id:e.event_id, title:event.title, msg:"イベント内容に変更がありました"});
+		}
+	});
 }
 
-function main(options) {
-	console.log(options);
+// キャンセル待ち→出席になったら通知
+function eventUserStatusNotify(options) {
 	if (options.user_id.length == 0) {
 		console.warn("options.user_id error");
 		return;
@@ -50,73 +85,53 @@ function main(options) {
 		console.warn("options.eventList error");
 		return;
 	}
+	$.each(options.eventList, function (i, e) {
+		console.debug(e);
+		if (e.status == 1) {
+			return; // 既に出席
+		}
+		var atnd = new Atnd(e.event_id);
+		var status = atnd.getStatus(options.user_id);
+		if (status == 1) {
+			e.status = status; // キャンセル待ち→出席
+			options.save();
+			notification.open({event_id:e.event_id, title:e.title, msg:"参加できるようになりました"});
+		}
+	});
+}
 
-	timer.start(function () {
-		console.log("timer run");
-		$.each(options.eventList, function (i, e) {
-			console.debug(e);
-			var atnd = new Atnd(e.event_id);
-			var event = atnd.getEvent();
-			if (event == null) {
-				return;
-			}
-			e.ended_at = event.ended_at;
-			e.started_at = event.started_at;
-			localStorage.options = JSON.stringify(options);
-
-			var eventDate = toDate(event.started_at);
-			// 現在時刻に対して残り何時間かをチェックする
-			var now = new Date()
-			if (now > eventDate) {
-			  return;
-			}
-			if (options.notifyList.length > 0) {
-				var list = options.notifyList;
-				var isSend = true;
-				for (var j = 0; j < list.length; j++) {
-					var configDay = list[j]; // 何日前に通知か？
-					if ($.inArray(configDay, e.notifyZumiList) > -1) {
-						continue;
-					}
-					var sai = (now - eventDate) * -1; // 差分ミリ秒数
-					var time = (1000 * 60 * 60 * 24) * configDay; // 1日
-					if (time >= sai) {
-						if (isSend) {
-							notification.open({event_id:e.event_id, title:event.title, msg:"開催日時：" + eventDate.toISOString().substring(0, 10)});
-							isSend = false;
-						}
-						e.notifyZumiList.push(list[j]);
-						continue;
-					}
-				}
-				localStorage.options = JSON.stringify(options);
-			}
-			if (event.updated_at > e.updated_at) {
-				e.updated_at = event.updated_at;
-				notification.open({event_id:e.event_id, title:event.title, msg:"イベント内容に変更がありました"});
-				localStorage.options = JSON.stringify(options);
-			}
-			if (e.status == 1) {
-				return; // 既に出席
-			}
-			var status = atnd.getStatus(options.user_id);
-			if (status == 1) {
-				e.status = status; // キャンセル待ち→出席
-				localStorage.options = JSON.stringify(options);
-				notification.open({event_id:e.event_id, title:event.title, msg:"参加できるようになりました"});
+// 特定キーワードを含むイベントが見つかったら通知する
+function keywordNotify(options) {
+	options.keywordList.forEach(function (keyword){
+		console.debug("keyword:" + keyword);
+		if (keyword.length == 0) {
+			return;
+		}
+		var events = Atnd.findByKeyword(keyword);
+		events.forEach(function (event){
+			if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
+				notification.open({event_id:event.event_id, title:event.title, msg:keyword + "のイベントが見つかりました。"});
+				options.keywordNotifiedList.push(event.event_id);
 			}
 		});
 	});
-
+	options.save();
 }
-// イベントの日付が過ぎていたらoptions.eventListから要素を削除する
-function deleteEndedEvent() {
+
+// イベントが終わっていたら通知イベント対象（options.eventList）から削除する
+function deleteEndedEvent(options) {
 	var eventList = [];
 	var now = new Date();
 	options.eventList.forEach(function (event) {
 		if (event.ended_at) {
-			var endDate = toDate(event.ended_at);
+			var endDate = Atnd.toDate(event.ended_at);
 			if (now.getTime() < endDate.getTime()) {
+				eventList.push(event);
+			}
+		} else if (event.started_at) {
+			// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
+			var endTime = Atnd.toDate(event.started_at).getTime() + (1000 * 60 * 60 * 24 * 3);
+			if (now.getTime() < endTime) {
 				eventList.push(event);
 			}
 		} else {
@@ -124,20 +139,17 @@ function deleteEndedEvent() {
 		}
 	});
 	options.eventList = eventList;
-	localStorage.options = JSON.stringify(options);
+	options.save();
 }
-deleteEndedEvent();
 
-main(options);
-queryTimerStart();
-
+// notification.html, content_scripts.jsとのメッセージ送受信イベント割り当て
 chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
-	console.log(message);
+	console.debug(message);
 	if (message.id === 'content_script_options') {
 		sendResponse(options);
 	} else if (message.id === 'content_script_userId') {
 		options.user_id = message.userId;
-		localStorage.options = JSON.stringify(options);
+		options.save();
 		sendResponse();
 	} else if (message.id === 'content_script_event_id') {
 		if (!message.isDelete) {
@@ -145,7 +157,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 			var status = new Atnd(message.event_id).getStatus(options.user_id) || 0;
 			var now = new Date();
 			options.eventList.push({'event_id': message.event_id, status:status, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString(), notifyZumiList:[]});
-			localStorage.options = JSON.stringify(options);
+			options.save();
 		} else {
 			// 通知解除
 			var list = [];
@@ -155,30 +167,15 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 				}
 			});
 			options.eventList = list;
-			localStorage.options = JSON.stringify(options);
+			options.save();
 		}
 		console.log(options);
 		sendResponse();
 	} else {
+		// notification.html
 		sendResponse(notification.getItem(message.id));
 	}
 });
-
-function restart() {
-	console.debug("restart");
-	timer.stop();
-	localStorage.options = JSON.stringify(options);
-	main(options);
-}
-
-function toDate(str) {
-	var yyyymmdd = str.substring(0, 10); // 2009-01-31
-	var HhMiSS = str.substring(11, 18); // 20:44:34
-	var time = Date.parse(yyyymmdd + " " + HhMiSS); // "2009/01/31 20:44:34"
-	var date = new Date();
-	date.setTime(time);
-	return date;
-}
 </script>
 </head>
 <body>

@@ -13,13 +13,13 @@
 	<script type="text/javascript" src="/js/atnd.js"></script>
 	<script src="js/jquery/custom_jquery.js" type="text/javascript"></script>
 	<script type="text/javascript">
+	var BG = chrome.extension.getBackgroundPage();
+	var options = BG.options;
 	$(function(){
 		var host = 'chrome-extension://' + location.host + '/html/options/';
 		$("#news").attr("href", host + 'news.html');
 		$("#about").attr("href", host + 'about.html');
 
-		var options = chrome.extension.getBackgroundPage().options;
-		//console.log(options);
 		$('#user_id').val(options.user_id);
 		$('#autoCloseTimeSS').val(options.autoCloseTimeSS);
 		if (options.eventList.length != 0) {
@@ -38,16 +38,6 @@
 			$('#eventIdList').append($('<li>').append(link)); // TODO:イベント名を非同期ajaxで取得して表示する
 		});
 
-		function getNotifyList() {
-			var result = [];
-			$("input[type='checkbox']").each(function (i, e) {
-				if ($(e).is(':checked')) {
-				  result.push($(e).val());
-				}
-			});
-			return result;
-		}
-
 		$('#saveBtn').click(function () {
 			if (!validate()) {
 				$("#message-success").fadeOut();
@@ -55,35 +45,43 @@
 			}
 			options.keywordList = [];
 			options.keywordList.push($('#keyword').val());
-			options.keywordNotifiedList = [];
 			options.user_id = $('#user_id').val();
 			var event_id = $('#event_id').val();
 			var now = new Date();
 			options.timerMI = $('#timerMI').val();
 			options.autoCloseTimeSS = $('#autoCloseTimeSS').val();
 			options.notifyList = getNotifyList();
-			chrome.extension.getBackgroundPage().options = options;
-			chrome.extension.getBackgroundPage().restart();
-			chrome.extension.getBackgroundPage().queryTimerRestart();
-
+			options.save();
 			$("#message-success").fadeOut(function () {
 				$(this).fadeIn();
 			});
+			BG.timer.restart();
 		});
 
-		function validate() {
-			var isError = false;
-			if (isNaN($('#user_id').val())) {
-				$('#user_id').addClass('inp-form-error');
-				$('#user_id_error').show();
-				isError = true;
-			} else {
-				$('#user_id').removeClass('inp-form-error');
-				$('#user_id_error').hide();
-			}
-			return !isError;
-		}
 	});
+
+	function getNotifyList() {
+		var result = [];
+		$("input[type='checkbox']").each(function (i, e) {
+			if ($(e).is(':checked')) {
+			  result.push($(e).val());
+			}
+		});
+		return result;
+	}
+
+	function validate() {
+		var isError = false;
+		if (isNaN($('#user_id').val())) {
+			$('#user_id').addClass('inp-form-error');
+			$('#user_id_error').show();
+			isError = true;
+		} else {
+			$('#user_id').removeClass('inp-form-error');
+			$('#user_id_error').hide();
+		}
+		return !isError;
+	}
 	</script>
 </head>
 <body>

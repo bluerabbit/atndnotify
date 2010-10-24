@@ -5,7 +5,7 @@ var Options = function (values, storageKey){
 		timerMI:15,
 		autoCloseTimeSS:30,
 		eventList:[],
-		notifyList:[],
+		notifyList:[1, 2, 3, 10],
 		keywordNotifiedList:[],
 		keywordList:[]
 	};

@@ -114,7 +114,7 @@ Atnd.findByKeyword = function(keyword) {
 //ATND APIレスポンスの日付文字列（started_at, ended_at ..etc)[yyyy-mm-ddThh:mi:ss+09:00]をDate型に変換する
 Atnd.toDate = function toDate(str) {
 	var yyyymmdd = str.substring(0, 10);
-	var HhMiSS = str.substring(11, 18);
+	var HhMiSS = str.substring(11, 19);
 	var time = Date.parse(yyyymmdd + " " + HhMiSS);
 	var date = new Date();
 	date.setTime(time);

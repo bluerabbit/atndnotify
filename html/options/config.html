@@ -38,6 +38,11 @@
 			$('#eventIdList').append($('<li>').append(link)); // TODO:イベント名を非同期ajaxで取得して表示する
 		});
 
+		$.each(options.ownerList, function (i, owner) {
+			var link = $('<a>').attr('target', '_blank').attr('href', 'http://atnd.org/users/' + owner.user_id).text(owner.nickname);
+			$('#ownerList').append($('<li>').append(link));
+		});
+
 		$('#saveBtn').click(function () {
 			if (!validate()) {
 				$("#message-success").fadeOut();
@@ -164,6 +169,11 @@
 			<tr>
 				<th valign="top">ATNDイベントID:</th>
 				<td><ul id="eventIdList"></ul></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th valign="top">通知する管理者ID:</th>
+				<td><ul id="ownerList"></ul></td>
 				<td></td>
 			</tr>
 			<tr>

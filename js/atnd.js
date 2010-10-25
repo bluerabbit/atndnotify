@@ -83,22 +83,8 @@ Atnd.findByKeyword = function(keyword) {
 		dataType : "json",
 		async : false,
 		success : function(json) {
-			var now = new Date();
 			// 終了したイベントは検索結果に含まない
-			json.events.forEach(function (event, i) {
-				if (!event.ended_at) {
-					// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
-					var endTime = Atnd.toDate(event.started_at).getTime() + (1000 * 60 * 60 * 24 * 3);
-					if (now.getTime() < endTime) {
-						result.push(event);
-					}
-					return;
-				}
-				var endDate = Atnd.toDate(event.ended_at);
-				if (now.getTime() < endDate.getTime()) {
-					result.push(event);
-				}
-			});
+			result = Atnd.isNotEndedEventList(json.events);
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
@@ -106,6 +92,53 @@ Atnd.findByKeyword = function(keyword) {
 				console.warn(xhr);
 				console.warn(error);
 			}
+		}
+	});
+	return result;
+}
+
+
+Atnd.findByOwnerId = function(ownerId) {
+	var result = [];
+	$.ajax( {
+		type : "GET",
+		url : "http://api.atnd.org/events/",
+		data : {
+			"owner_id" : ownerId,
+			"format" : "json"
+		},
+		dataType : "json",
+		async : false,
+		success : function(json) {
+			result = Atnd.isNotEndedEventList(json.events);
+		},
+		error: function (xhr, errorText, error) {
+			if (xhr.status == 200) {
+				console.warn("Atnd.find error:" + errorText);
+				console.warn(xhr);
+				console.warn(error);
+			}
+		}
+	});
+	return result;
+}
+
+Atnd.isNotEndedEventList = function (events) {
+	var now = new Date();
+	var result = [];
+	// 終了したイベントは検索結果に含まない
+	events.forEach(function (event, i) {
+		if (!event.ended_at) {
+			// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
+			var endTime = Atnd.toDate(event.started_at).getTime() + (1000 * 60 * 60 * 24 * 3);
+			if (now.getTime() < endTime) {
+				result.push(event);
+			}
+			return;
+		}
+		var endDate = Atnd.toDate(event.ended_at);
+		if (now.getTime() < endDate.getTime()) {
+			result.push(event);
 		}
 	});
 	return result;

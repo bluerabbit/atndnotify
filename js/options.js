@@ -6,8 +6,10 @@ var Options = function (values, storageKey){
 		autoCloseTimeSS:30,
 		eventList:[],
 		notifyList:[1, 2, 3, 10],
+		keywordList:[],
 		keywordNotifiedList:[],
-		keywordList:[]
+		ownerList:[], // {user_id:'', nickname:'', updated_at:''}
+		ownerNotifiedList:[]
 	};
 	var self = this;
 	Object.keys(values).forEach(function(key){

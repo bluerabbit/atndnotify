@@ -19,6 +19,7 @@ function main(options) {
 		eventUserStatusNotify(options);
 		eventStartDateNotifyAndEventUpdateNotify(options);
 		keywordNotify(options);
+		ownerNotify(options);
 		options.save();
 	});
 }
@@ -142,6 +143,24 @@ function deleteEndedEvent(options) {
 	options.save();
 }
 
+// 特定の管理人がイベントを立てたら通知する
+function ownerNotify(options) {
+	options.ownerList.forEach(function (owner){
+		console.debug(owner);
+		var events = Atnd.findByOwnerId(owner.user_id);
+		events.forEach(function (event){
+			if (Atnd.toDate(owner.updated_at) < Atnd.toDate(event.updated_at)) {
+				owner.updated_at = event.updated_at;
+				if ($.inArray(event.event_id, options.ownerNotifiedList) == -1) {
+					notification.open({event_id:event.event_id, title:event.title, msg:owner.nickname + "さんが新規イベントを作成しました。"});
+					options.ownerNotifiedList.push(event.event_id);
+				}
+			}
+		});
+	});
+	options.save();
+}
+
 // notification.html, content_scripts.jsとのメッセージ送受信イベント割り当て
 chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 	console.debug(message);
@@ -170,6 +189,23 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 			options.save();
 		}
 		console.log(options);
+		sendResponse();
+	} else if (message.id === 'content_script_ownerId') {
+		if (!message.isDelete) {
+			// 通知設定
+			var now = new Date();
+			options.ownerList.push({user_id:message.ownerId, nickname:message.ownerNickname, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString()});
+		} else {
+			// 通知解除
+			var list = [];
+			$.each(options.ownerList, function (i, owner){
+				if (message.ownerId != owner.user_id) {
+					list.push(ownerId);
+				}
+			});
+			options.ownerList = list;
+		}
+		options.save();
 		sendResponse();
 	} else {
 		// notification.html

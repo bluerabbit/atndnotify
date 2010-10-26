@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>ATND Notify Config</title>
+	<link rel="stylesheet" href="css/screen.css" type="text/css" media="screen" title="default" />
+	<link rel="stylesheet" href="css/calendar.css" type="text/css" media="screen" title="default" />
+	<!--  jquery core -->
+	<script src="js/jquery/jquery-1.4.1.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/js/atnd.js"></script>
+	<script type="text/javascript">
+	var BG = chrome.extension.getBackgroundPage();
+	var options = BG.options;
+    var showDate = new Date();
+    var eventList =options.eventCalendarList;
+    /*
+     var event = {
+		event_id:'1',
+		owner_id:'2',
+		owner_nickname:'',
+		updated_at:'2010-10-13T19:30:00+09:00',
+		started_at:'2010-10-13T19:30:00+09:00',
+		ended_at:'2010-10-13T21:30:00+09:00',
+		accepted:10,
+		users:[{status:'1', nickname:''}]
+	};*/
+    $(function () {
+		var host = 'chrome-extension://' + location.host + '/html/options/';
+		$("#config").attr("href", host + 'config.html');
+		$("#news").attr("href", host + 'news.html');
+		$("#about").attr("href", host + 'about.html');
+		$("#calendar").attr("href", host + 'calendar.html');
+
+      createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+      bindEvent(eventList);
+
+      $('#back').click(function () {
+    	  showDate.setMonth(showDate.getMonth()-1);
+    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+    	  bindEvent(eventList);
+      });
+
+      $('#next').click(function () {
+    	  showDate.setMonth(showDate.getMonth()+1);
+    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+    	  bindEvent(eventList);
+      });
+    });
+
+    function createCalender(year, month) {
+      $("#caption").text(year + "年" + month + "月");
+      var list = createCalenderDateList(year, month);
+      var table = $("#cal");
+      table.find("tr[class!='dow']").remove();
+      var tr = $('<tr>');
+      list.forEach(function (date, i) {
+        var id = toYyyyMmDd(date);
+        var td = $('<td>').attr('id', id);
+        if (date.getMonth()+1 == month) {
+          td.append($('<span>').addClass('span_date').text(date.getDate()));
+        }
+        if (date.getDay() == 0) {
+          td.addClass('sun');
+        } else if (date.getDay() == 6) {
+          td.addClass('sat');
+        }
+        tr.append(td);
+        if ((i+1)%7 == 0) {
+          table.append(tr);
+          tr = $('<tr>');
+        }
+      });
+    }
+
+    function bindEvent(eventList) {
+    	eventList.forEach(function (event, i){
+			var cell = $("#" + toYyyyMmDd(Atnd.toDate(event.started_at)));
+			if (cell.length == 0) {
+				return;
+			}
+			var ul = cell.find('ul');
+			if (ul.length == 0) {
+				ul = $('<ul>');
+			}
+			var li = $('<li>');
+			var link = $('<a>').text(getEventTimeText(event));
+			link.attr('href', 'http://atnd.org/events/' + event.event_id).attr('target', '_blank');
+			link.attr('title', event.title);
+			li.append(link);
+			ul.append(li);
+			if (cell.find('ul').length == 0) {
+				cell.append(ul);
+			}
+    	});
+    }
+
+    function getEventTimeText(event) {
+		var startDate = Atnd.toDate(event.started_at);
+		var text = startDate.toLocaleTimeString().substring(0, 5) + '～';
+		if (event.ended_at) {
+			var endDate = Atnd.toDate(event.ended_at);
+			if (startDate.getDate() == endDate.getDate()) {
+				text += endDate.toLocaleTimeString().substring(0, 5);
+			}
+		}
+		return text;
+    }
+
+    function createCalenderDateList(year, month) {
+      var firstDate = new Date(year, month - 1, 1);
+      var startDate = new Date(year, month - 1, 1 - firstDate.getDay());
+      var list = [];
+      while(true) {
+        var d = new Date(startDate);
+        d.setDate(d.getDate() + list.length);
+        list.push(d);
+        if (list.length == (7 * 6)) {
+          return list;
+        }
+      }
+    }
+
+    function toYyyyMmDd(date) {
+      var mm = date.getMonth() + 1;
+      var dd = date.getDate();
+      if (mm < 10) mm = "0" + mm;
+      if (dd < 10) dd = "0" + dd;
+      return String(date.getFullYear()) + mm + dd;
+    }
+  </script>
+</head>
+<body>
+<div id="page-top-outer">
+	<div id="page-top">
+		<div id="logo">
+		<a href=""><img src="images/shared/logo.png" width="156" height="40" alt="" /></a>
+		</div>
+	</div>
+</div>
+<div class="clear">&nbsp;</div>
+
+<!--  start nav-outer-repeat................................................. START -->
+<div class="nav-outer-repeat">
+<!--  start nav-outer -->
+<div class="nav-outer">
+	<div class="nav">
+		<div class="table">
+			<ul class="select"><li><a id="config" href="#nogo"><b>Config</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="select"><li><a id="news" href="#nogo"><b>News</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="select"><li><a id="about" href="#nogo"><b>About</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="current"><li><a id="calendar" href="#nogo"><b>Calendar</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+<div class="clear"></div>
+<!--  start nav-outer -->
+</div>
+<!--  start nav-outer-repeat................................................... END -->
+
+ <div class="clear"></div>
+
+<!-- start content-outer -->
+<div id="content-outer">
+<!-- start content -->
+<div id="content">
+
+<div id="page-heading"><h1>イベントカレンダー</h1></div>
+
+	<table border="0" width="100%" cellpadding="0" cellspacing="0" id="content-table">
+	<tr>
+		<th rowspan="3" class="sized"><img src="images/shared/side_shadowleft.jpg" width="20" height="300" alt="" /></th>
+		<th class="topleft"></th>
+		<td id="tbl-border-top">&nbsp;</td>
+		<th class="topright"></th>
+		<th rowspan="3" class="sized"><img src="images/shared/side_shadowright.jpg" width="20" height="300" alt="" /></th>
+	</tr>
+	<tr>
+		<td id="tbl-border-left"></td>
+		<td>
+		<!--  start content-table-inner -->
+		<div id="content-table-inner">
+		<div id="xx">
+				<input type="button" id="back" value="前月" />|<input type="button" id="next" value="来月" />
+
+			<table id="cal">
+			    <caption id="caption"></caption>
+			    <tr class="dow">
+			      <th style="width:30" class="sun">日</th>
+			      <th style="width:30" >月</th>
+			      <th style="width:30" >火</th>
+			      <th style="width:30" >水</th>
+			      <th style="width:30" >木</th>
+			      <th style="width:30" >金</th>
+			      <th style="width:30"  class="sat">土</th>
+			    </tr>
+			</table>
+			</div>
+		</div>
+		<!--  end content-table-inner  -->
+		</td>
+		<td id="tbl-border-right"></td>
+	</tr>
+	<tr>
+		<th class="sized bottomleft"></th>
+		<td id="tbl-border-bottom">&nbsp;</td>
+		<th class="sized bottomright"></th>
+	</tr>
+	</table>
+
+	<div class="clear">&nbsp;</div>
+</div>
+<!--  end content -->
+<div class="clear">&nbsp;</div>
+</div>
+<!--  end content-outer -->
+<div class="clear">&nbsp;</div>
+<div id="footer">
+	<div id="footer-left">AtndNotify &copy; Copyright <a href="http://twitter.com/bluerabbit777jp" target="_blank">@bluerabbit777jp</a>. All rights reserved.</div>
+	<div class="clear">&nbsp;</div>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@ var Options = function (values, storageKey){
 		timerMI:15,
 		autoCloseTimeSS:30,
 		eventList:[],
+		eventCalendarList:[],
 		notifyList:[1, 2, 3, 10],
 		keywordList:[],
 		keywordNotifiedList:[],
@@ -25,6 +26,9 @@ Options.prototype = {
 				return value;
 			}
 		});
+	},
+	reset: function () {
+		localStorage.removeItem(this._storageKey);
 	}
 };
 Options.load = function (storageKey) {

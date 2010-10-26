@@ -42,6 +42,7 @@ function eventStartDateNotifyAndEventUpdateNotify(options) {
 		if (event == null) {
 			return;
 		}
+		addEventCalendarList(options, event);
 		e.ended_at = event.ended_at;
 		e.started_at = event.started_at;
 		e.title = event.title;
@@ -110,6 +111,7 @@ function keywordNotify(options) {
 		}
 		var events = Atnd.findByKeyword(keyword);
 		events.forEach(function (event){
+			addEventCalendarList(options, event);
 			if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
 				notification.open({event_id:event.event_id, title:event.title, msg:keyword + "のイベントが見つかりました。"});
 				options.keywordNotifiedList.push(event.event_id);
@@ -149,6 +151,7 @@ function ownerNotify(options) {
 		console.debug(owner);
 		var events = Atnd.findByOwnerId(owner.user_id);
 		events.forEach(function (event){
+			addEventCalendarList(options, event);
 			if (Atnd.toDate(owner.updated_at) < Atnd.toDate(event.updated_at)) {
 				owner.updated_at = event.updated_at;
 				if ($.inArray(event.event_id, options.ownerNotifiedList) == -1) {
@@ -159,6 +162,19 @@ function ownerNotify(options) {
 		});
 	});
 	options.save();
+}
+
+function addEventCalendarList(options, event) {
+	// TODO:更新されていた場合はeventを差し替える必要あり
+	var isHave = false;
+	options.eventCalendarList.forEach(function (e, i) {
+		if (e.event_id == event.event_id) {
+			isHave = true;
+		}
+	});
+	if (!isHave) {
+		options.eventCalendarList.push(event);
+	}
 }
 
 // notification.html, content_scripts.jsとのメッセージ送受信イベント割り当て

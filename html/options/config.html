@@ -19,6 +19,7 @@
 		var host = 'chrome-extension://' + location.host + '/html/options/';
 		$("#news").attr("href", host + 'news.html');
 		$("#about").attr("href", host + 'about.html');
+		$("#calendar").attr("href", host + 'calendar.html');
 
 		$('#user_id').val(options.user_id);
 		$('#autoCloseTimeSS').val(options.autoCloseTimeSS);
@@ -110,6 +111,8 @@
 			<ul class="select"><li><a id="news" href="#nogo"><b>News</b></a></li></ul>
 			<div class="nav-divider">&nbsp;</div>
 			<ul class="select"><li><a id="about" href="#nogo"><b>About</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="select"><li><a id="calendar" href="#nogo"><b>Calendar</b></a></li></ul>
 			<div class="nav-divider">&nbsp;</div>
 			<div class="clear"></div>
 		</div>

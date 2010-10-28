@@ -93,6 +93,13 @@ function eventUserStatusNotify(options) {
 			return; // 既に出席
 		}
 		var atnd = new Atnd(e.event_id);
+		var event = atnd.getEvent();
+		if (event == null) {
+			return;
+		}
+		e.ended_at = event.ended_at;
+		e.started_at = event.started_at;
+		e.title = event.title;
 		var status = atnd.getStatus(options.user_id);
 		if (status == 1) {
 			e.status = status; // キャンセル待ち→出席
@@ -104,6 +111,7 @@ function eventUserStatusNotify(options) {
 
 // 特定キーワードを含むイベントが見つかったら通知する
 function keywordNotify(options) {
+	var list = [];
 	options.keywordList.forEach(function (keyword){
 		console.debug("keyword:" + keyword);
 		if (keyword.length == 0) {
@@ -113,10 +121,13 @@ function keywordNotify(options) {
 		events.forEach(function (event){
 			addEventCalendarList(options, event);
 			if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
-				notification.open({event_id:event.event_id, title:event.title, msg:keyword + "のイベントが見つかりました。"});
+				list.push(keyword);
 				options.keywordNotifiedList.push(event.event_id);
 			}
 		});
+	});
+	$.each($.unique(list), function (i, keyword) {
+		notification.open({title:keyword, msg: "イベントが見つかりました。アイコンをクリックしてカレンダーを確認してください。"});
 	});
 	options.save();
 }
@@ -173,6 +184,7 @@ function addEventCalendarList(options, event) {
 		}
 	});
 	if (!isHave) {
+		event.attention = true;
 		options.eventCalendarList.push(event);
 	}
 }

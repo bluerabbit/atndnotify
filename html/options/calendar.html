@@ -13,6 +13,7 @@
 	var options = BG.options;
     var showDate = new Date();
     var eventList =options.eventCalendarList;
+    var presenceEventList = options.eventList;
     /*
      var event = {
 		event_id:'1',
@@ -53,16 +54,23 @@
       var table = $("#cal");
       table.find("tr[class!='dow']").remove();
       var tr = $('<tr>');
+      var now = new Date();
       list.forEach(function (date, i) {
         var id = toYyyyMmDd(date);
         var td = $('<td>').attr('id', id);
         if (date.getMonth()+1 == month) {
           td.append($('<span>').addClass('span_date').text(date.getDate()));
+        } else {
+          td.append($('<span>').addClass('span_date_other_month').text(date.getDate()));
         }
+
         if (date.getDay() == 0) {
           td.addClass('sun');
         } else if (date.getDay() == 6) {
           td.addClass('sat');
+        }
+        if (now.toDateString() == date.toDateString()) {
+            td.addClass('today');
         }
         tr.append(td);
         if ((i+1)%7 == 0) {
@@ -84,8 +92,24 @@
 			}
 			var li = $('<li>');
 			var link = $('<a>').text(getEventTimeText(event));
+			if (event.attention) {
+				// 通知直後のイベントは注目させる
+				cell.addClass('attention');
+				event.attention = false;
+			}
 			link.attr('href', 'http://atnd.org/events/' + event.event_id).attr('target', '_blank');
-			link.attr('title', event.title);
+			link.attr('title', '[' + event.title + ']\n' + event.catch + '\n' + event.place + '\nby '+ event.owner_nickname);
+			// 参加予定のイベントは注目させる
+			var isAttention = false;
+			presenceEventList.forEach(function (e) {
+				if (e.event_id == event.event_id){
+					if (!isAttention) {
+						cell.addClass('attention');
+						link.attr('title', '(参加予定)\n' + link.attr('title'));
+						isAttention = true;
+					}
+				}
+			});
 			li.append(link);
 			ul.append(li);
 			if (cell.find('ul').length == 0) {

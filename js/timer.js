@@ -21,7 +21,7 @@ Timer.prototype = {
 			sessionStorage[storageKey] = timerId;
 		})();
 
-		setTimeout(fn, 100);
+		setTimeout(fn, 1000);
 	},
 	stop: function () {
 		sessionStorage[this._id + "/enabled"] = "false";

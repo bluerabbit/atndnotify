@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="/js/eventMap.js"></script>
 <script type="text/javascript" src="/js/atnd.js"></script>
 <script type="text/javascript" src="/js/timer.js"></script>
 <script type="text/javascript" src="/js/notification.js"></script>
@@ -15,98 +16,126 @@ function main(options) {
 	timer.start(function () {
 		console.log("timer run");
 		console.log(options);
-		deleteEndedEvent(options);
+		updateUserEventList(options);
 		eventUserStatusNotify(options);
 		eventStartDateNotifyAndEventUpdateNotify(options);
 		keywordNotify(options);
 		ownerNotify(options);
-		options.save();
 	});
 }
 main(options);
 
+// 参加イベントの一覧を更新する
+function updateUserEventList(options) {
+	var events = Atnd.findByUserId(options.user_id);
+	var map = new EventMap(options.user_events);
+	events.forEach(function (event) {
+		var userEvent = map.get(event.event_id);
+		if (userEvent == null) {
+			var status = 0;
+			event.users.forEach(function (user) {
+				if (options.user_id == user.user_id) {
+					status = user.status;
+				}
+			});
+			map.put({event_id:event.event_id, title:event.title, status:status, updated_at:event.updated_at, dateNotifiedList:[]});
+		} else if (userEvent.status == 0 && event.status == 1) {
+			userEvent.status = 1;
+		}
+	});
+	options.user_events = map.toArray();
+	options.user_events.forEach(function (userEvent) {
+		if (userEvent.started_at != null) {
+			return;
+		}
+		var atnd = new Atnd(userEvent.event_id);
+		var event = atnd.getEvent();
+		if (event == null) {
+			return;
+		}
+		userEvent.started_at = event.started_at;
+		userEvent.ended_at = event.ended_at;
+		userEvent.owner_id = event.owner_id;
+		userEvent.owner_nickname = event.owner_nickname;
+		userEvent.accepted = event.accepted;
+		userEvent.limit = event.limit;
+		userEvent.waiting = event.waiting;
+		userEvent.address = event.address;
+		userEvent.lon = event.lon;
+		userEvent.lat = event.lat;
+		addEventCalendarList(options, event);
+	});
+	options.save();
+}
+
 // イベントの開催日時が近づいたら通知、イベントに変更があったら通知
 function eventStartDateNotifyAndEventUpdateNotify(options) {
-	if (options.eventList.length == 0) {
-		console.warn("options.eventList is Not Found");
-		return;
-	} else if (options.notifyList.length == 0) {
-		console.warn("options.notifyList is Not Found");
-		return;
-	}
 
-	$.each(options.eventList, function (i, e) {
-		console.debug(e);
-		var atnd = new Atnd(e.event_id);
+	// 終了していないイベントを抽出
+	var eventList = Atnd.filterIsNotEndedEventList(options.user_events);
+	var now = new Date();
+	eventList.forEach(function (userEvent) {
+		console.debug(userEvent);
+		var atnd = new Atnd(userEvent.event_id);
 		var event = atnd.getEvent();
 		if (event == null) {
 			return;
 		}
 		addEventCalendarList(options, event);
-		e.ended_at = event.ended_at;
-		e.started_at = event.started_at;
-		e.title = event.title;
+		userEvent.started_at = event.started_at;
+		userEvent.ended_at = event.ended_at;
+		userEvent.accepted = event.accepted;
+		userEvent.limit = event.limit;
+		userEvent.waiting = event.waiting;
+		userEvent.address = event.address;
+		userEvent.lon = event.lon;
+		userEvent.lat = event.lat;
 
-		// 現在時刻に対して開始時間が残り何時間かをチェックする
-		var eventDate = Atnd.toDate(e.started_at);
-		var now = new Date()
-		if (now > eventDate) {
-		  return;
-		}
-		var list = options.notifyList; // 何日前に通知するか?の設定値
+
+		// 何日前に備忘通知
+		var eventDate = Atnd.toDate(event.started_at);
 		var isNotified = false;
-		for (var i = 0; i < list.length; i++) {
-			var configDay = list[i];
-			if ($.inArray(configDay, e.notifyZumiList) > -1) {
-				continue; // 過去に通知済み
+		options.dateNotifyList.forEach(function (dateNotify) {
+			if ($.inArray(dateNotify, userEvent.dateNotifiedList) > -1) {
+				return; // 過去に通知済み
 			}
 			var sai = (now - eventDate) * -1; // 差分ミリ秒数
-			var time = (1000 * 60 * 60 * 24) * configDay;
+			var time = (1000 * 60 * 60 * 24) * dateNotify;
 			if (time >= sai) {
 				if (!isNotified) {
-					notification.open({event_id:e.event_id, title:e.title, msg:"開催日時：" + eventDate.toISOString().substring(0, 10)});
+					notification.open({event_id:event.event_id, title:event.title, msg:"(備忘通知)開催日時：" + eventDate.toISOString().substring(0, 10)});
 					isNotified = true;
 				}
-				e.notifyZumiList.push(list[i]);
-				continue;
+				userEvent.dateNotifiedList.push(dateNotify);
 			}
-		}
-		if (event.updated_at > e.updated_at) {
-			e.updated_at = event.updated_at;
-			notification.open({event_id:e.event_id, title:event.title, msg:"イベント内容に変更がありました"});
+		});
+
+		if (event.updated_at > userEvent.updated_at) {
+			userEvent.updated_at = event.updated_at;
+			notification.open({event_id:event.event_id, title:event.title, msg:"イベント内容に変更がありました"});
 		}
 	});
+
+	options.save();
 }
 
 // キャンセル待ち→出席になったら通知
 function eventUserStatusNotify(options) {
-	if (options.user_id.length == 0) {
-		console.warn("options.user_id error");
-		return;
-	} else if (options.eventList.length == 0) {
-		console.warn("options.eventList error");
-		return;
-	}
-	$.each(options.eventList, function (i, e) {
-		console.debug(e);
-		if (e.status == 1) {
+	// 終了していないイベントを抽出
+	var eventList = Atnd.filterIsNotEndedEventList(options.user_events);
+	eventList.forEach(function (userEvent) {
+		console.debug(userEvent);
+		if (userEvent.status == 1) {
 			return; // 既に出席
 		}
-		var atnd = new Atnd(e.event_id);
-		var event = atnd.getEvent();
-		if (event == null) {
-			return;
-		}
-		e.ended_at = event.ended_at;
-		e.started_at = event.started_at;
-		e.title = event.title;
+		var atnd = new Atnd(userEvent.event_id);
 		var status = atnd.getStatus(options.user_id);
 		if (status == 1) {
-			e.status = status; // キャンセル待ち→出席
-			options.save();
-			notification.open({event_id:e.event_id, title:e.title, msg:"参加できるようになりました"});
+			userEvent.status = 1; // キャンセル待ち→出席
+			notification.open({event_id:userEvent.event_id, title:userEvent.title, msg:"参加できるようになりました"});
 		}
 	});
+	options.save();
 }
 
 // 特定キーワードを含むイベントが見つかったら通知する
@@ -114,9 +143,6 @@ function keywordNotify(options) {
 	var list = [];
 	options.keywordList.forEach(function (keyword){
 		console.debug("keyword:" + keyword);
-		if (keyword.length == 0) {
-			return;
-		}
 		var events = Atnd.findByKeyword(keyword);
 		events.forEach(function (event){
 			addEventCalendarList(options, event);
@@ -127,32 +153,9 @@ function keywordNotify(options) {
 		});
 	});
 	$.each($.unique(list), function (i, keyword) {
+		// TODO:○件のイベントが見つかりました。に変更する。
 		notification.open({title:keyword, msg: "イベントが見つかりました。アイコンをクリックしてカレンダーを確認してください。"});
 	});
-	options.save();
-}
-
-// イベントが終わっていたら通知イベント対象（options.eventList）から削除する
-function deleteEndedEvent(options) {
-	var eventList = [];
-	var now = new Date();
-	options.eventList.forEach(function (event) {
-		if (event.ended_at) {
-			var endDate = Atnd.toDate(event.ended_at);
-			if (now.getTime() < endDate.getTime()) {
-				eventList.push(event);
-			}
-		} else if (event.started_at) {
-			// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
-			var endTime = Atnd.toDate(event.started_at).getTime() + (1000 * 60 * 60 * 24 * 3);
-			if (now.getTime() < endTime) {
-				eventList.push(event);
-			}
-		} else {
-			eventList.push(event);
-		}
-	});
-	options.eventList = eventList;
 	options.save();
 }
 
@@ -196,27 +199,8 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 		sendResponse(options);
 	} else if (message.id === 'content_script_userId') {
 		options.user_id = message.userId;
+		options.user_nickname = message.nickname;
 		options.save();
-		sendResponse();
-	} else if (message.id === 'content_script_event_id') {
-		if (!message.isDelete) {
-			// 通知設定
-			var status = new Atnd(message.event_id).getStatus(options.user_id) || 0;
-			var now = new Date();
-			options.eventList.push({'event_id': message.event_id, status:status, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString(), notifyZumiList:[]});
-			options.save();
-		} else {
-			// 通知解除
-			var list = [];
-			$.each(options.eventList, function (i, e){
-				if (message.event_id != e.event_id) {
-					list.push(e);
-				}
-			});
-			options.eventList = list;
-			options.save();
-		}
-		console.log(options);
 		sendResponse();
 	} else if (message.id === 'content_script_ownerId') {
 		if (!message.isDelete) {

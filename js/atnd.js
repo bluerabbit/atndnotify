@@ -21,9 +21,7 @@ Atnd.prototype = {
 			},
 			error: function (xhr, errorText, error) {
 				if (xhr.status == 200) {
-					console.warn("Atnd.getEvent error:" + errorText);
-					console.warn(xhr);
-					console.warn(error);
+					console.warn("Atnd.getEvent error:" + errorText); // parsererror
 				}
 			}
 		});
@@ -62,19 +60,8 @@ Atnd.findByKeyword = function(keyword) {
 	var param = {
 			keyword: keyword,
 			format: 'json',
-			ym: toYyyyMm(date) + ',' + toYyyyMm(nextMonth(date)) + ',' + toYyyyMm(nextMonth(date))
+			ym: Atnd.monthParameter()
 	};
-	function toYyyyMm(date) {
-		var mm = date.getMonth() + 1;
-		if (mm < 10) mm = "0" + mm;
-		return String(date.getFullYear()) + mm;
-	}
-
-	function nextMonth(date) {
-		date.setMonth(date.getMonth()+1);
-		return date;
-	}
-
 	var result = [];
 	$.ajax( {
 		type : "GET",
@@ -84,19 +71,42 @@ Atnd.findByKeyword = function(keyword) {
 		async : false,
 		success : function(json) {
 			// 終了したイベントは検索結果に含まない
-			result = Atnd.isNotEndedEventList(json.events);
+			result = Atnd.filterIsNotEndedEventList(json.events);
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
-				console.warn("Atnd.find error:" + errorText);
-				console.warn(xhr);
-				console.warn(error);
+				console.warn("Atnd.findByKeyword error:" + errorText); // parsererror
 			}
 		}
 	});
 	return result;
 }
 
+// 指定したユーザIDのユーザが参加しているイベントを検索
+Atnd.findByUserId = function(user_id) {
+	var param = {
+			user_id: user_id,
+			format: 'json',
+			ym: Atnd.monthParameter()
+	};
+	var result = [];
+	$.ajax( {
+		type : "GET",
+		url : "http://api.atnd.org/events/users/",
+		data : param,
+		dataType : "json",
+		async : false,
+		success : function(json) {
+			result = json.events;
+		},
+		error: function (xhr, errorText, error) {
+			if (xhr.status == 200) {
+				console.warn("Atnd.findByUserId error:" + errorText); // parsererror
+			}
+		}
+	});
+	return result;
+}
 
 Atnd.findByOwnerId = function(ownerId) {
 	var result = [];
@@ -110,35 +120,47 @@ Atnd.findByOwnerId = function(ownerId) {
 		dataType : "json",
 		async : false,
 		success : function(json) {
-			result = Atnd.isNotEndedEventList(json.events);
+			result = Atnd.filterIsNotEndedEventList(json.events);
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
-				console.warn("Atnd.find error:" + errorText);
-				console.warn(xhr);
-				console.warn(error);
+				console.warn("Atnd.findByOwnerId error:" + errorText); // parsererror
 			}
 		}
 	});
 	return result;
 }
 
-Atnd.isNotEndedEventList = function (events) {
-	var now = new Date();
+// 直近２ヶ月を検索対象とする
+Atnd.monthParameter = function () {
+	var date = new Date();
+	function toYyyyMm(date) {
+		var mm = date.getMonth() + 1;
+		if (mm < 10) mm = "0" + mm;
+		return String(date.getFullYear()) + mm;
+	}
+	function nextMonth(date) {
+		date.setMonth(date.getMonth()+1);
+		return date;
+	}
+	return toYyyyMm(date) + ',' + toYyyyMm(nextMonth(date));
+}
+
+Atnd.filterIsNotEndedEventList = function (events) {
 	var result = [];
-	// 終了したイベントは検索結果に含まない
-	events.forEach(function (event, i) {
-		if (!event.ended_at) {
-			// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
-			var endTime = Atnd.toDate(event.started_at).getTime() + (1000 * 60 * 60 * 24 * 3);
-			if (now.getTime() < endTime) {
+	var now = new Date()
+	events.forEach(function (event) {
+		if (event.ended_at) {
+			if (now < Atnd.toDate(event.ended_at)) {
 				result.push(event);
 			}
-			return;
-		}
-		var endDate = Atnd.toDate(event.ended_at);
-		if (now.getTime() < endDate.getTime()) {
-			result.push(event);
+		} else if (event.started_at) {
+			// 終了日が設定されていないイベントは開始日から三日経過してたら終わった事にする
+			var endDate = Atnd.toDate(event.started_at);
+			endDate.setDate(endDate.getDate() + 3);
+			if (now < endDate) {
+				result.push(event);
+			}
 		}
 	});
 	return result;

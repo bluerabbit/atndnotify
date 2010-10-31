@@ -1,5 +1,5 @@
 // 1 - START DROPDOWN SLIDER SCRIPTS ------------------------------------------------------------------------
-
+/*
 $(document).ready(function () {
     $(".showhide-account").click(function () {
         $(".account-content").slideToggle("fast");
@@ -7,7 +7,7 @@ $(document).ready(function () {
         return false;
     });
 });
-
+*/
 $(document).ready(function () {
     $(".action-slider").click(function () {
         $("#actions-box-slider").slideToggle("fast");
@@ -66,7 +66,7 @@ $(document).ready(function() {
 
 
 // 4 - CLOSE OPEN SLIDERS BY CLICKING ELSEWHERE ON PAGE -------------------------------------------------------------------------
-
+/*
 $(document).bind("click", function (e) {
     if (e.target.id != $(".showhide-account").attr("class")) $(".account-content").slideUp();
 });
@@ -74,6 +74,7 @@ $(document).bind("click", function (e) {
 $(document).bind("click", function (e) {
     if (e.target.id != $(".action-slider").attr("class")) $("#actions-box-slider").slideUp();
 });
+*/
 // END ----------------------------- 4
 
 

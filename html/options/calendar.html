@@ -12,8 +12,9 @@
 	var BG = chrome.extension.getBackgroundPage();
 	var options = BG.options;
     var showDate = new Date();
+    showDate.setDate(1);
     var eventList =options.eventCalendarList;
-    var presenceEventList = options.eventList;
+    var presenceEventList = options.user_events;
     /*
      var event = {
 		event_id:'1',
@@ -104,8 +105,8 @@
 			presenceEventList.forEach(function (e) {
 				if (e.event_id == event.event_id){
 					if (!isAttention) {
-						cell.addClass('attention');
-						link.attr('title', '(参加予定)\n' + link.attr('title'));
+						cell.addClass('user_event');
+						link.attr('title',link.attr('title') + '\n(参加登録済み)');
 						isAttention = true;
 					}
 				}

@@ -12,20 +12,9 @@
 	var BG = chrome.extension.getBackgroundPage();
 	var options = BG.options;
     var showDate = new Date();
-    showDate.setDate(1);
+    showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
     var eventList =options.eventCalendarList;
     var presenceEventList = options.user_events;
-    /*
-     var event = {
-		event_id:'1',
-		owner_id:'2',
-		owner_nickname:'',
-		updated_at:'2010-10-13T19:30:00+09:00',
-		started_at:'2010-10-13T19:30:00+09:00',
-		ended_at:'2010-10-13T21:30:00+09:00',
-		accepted:10,
-		users:[{status:'1', nickname:''}]
-	};*/
     $(function () {
 		var host = 'chrome-extension://' + location.host + '/html/options/';
 		$("#config").attr("href", host + 'config.html');
@@ -38,6 +27,13 @@
 
       $('#back').click(function () {
     	  showDate.setMonth(showDate.getMonth()-1);
+    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+    	  bindEvent(eventList);
+      });
+
+      $('#presentMonth').click(function () {
+    	  showDate = new Date();
+    	  showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
     	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
     	  bindEvent(eventList);
       });
@@ -211,8 +207,9 @@
 		<!--  start content-table-inner -->
 		<div id="content-table-inner">
 		<div id="xx">
-				<input type="button" id="back" value="前月" />|<input type="button" id="next" value="来月" />
-
+				<input type="button" id="back" value="前月" style="width: 70px; height: 30px;" />&nbsp;
+				|&nbsp;<input type="button" id="presentMonth" value="当月" style="width: 70px; height: 30px;" />&nbsp;
+				|&nbsp;<input type="button" id="next" value="来月" style="width: 70px; height: 30px;" />
 			<table id="cal">
 			    <caption id="caption"></caption>
 			    <tr class="dow">

@@ -27,6 +27,9 @@ main(options);
 
 // 参加イベントの一覧を更新する
 function updateUserEventList(options) {
+	if (options.user_id == '') {
+		return;
+	}
 	var events = Atnd.findByUserId(options.user_id);
 	var map = new EventMap(options.user_events);
 	events.forEach(function (event) {
@@ -39,8 +42,6 @@ function updateUserEventList(options) {
 				}
 			});
 			map.put({event_id:event.event_id, title:event.title, status:status, updated_at:event.updated_at, dateNotifiedList:[]});
-		} else if (userEvent.status == 0 && event.status == 1) {
-			userEvent.status = 1;
 		}
 	});
 	options.user_events = map.toArray();
@@ -179,17 +180,12 @@ function ownerNotify(options) {
 }
 
 function addEventCalendarList(options, event) {
-	// TODO:更新されていた場合はeventを差し替える必要あり
-	var isHave = false;
-	options.eventCalendarList.forEach(function (e, i) {
-		if (e.event_id == event.event_id) {
-			isHave = true;
-		}
-	});
-	if (!isHave) {
+	var map = new EventMap(options.eventCalendarList);
+	if (map.get(event.event_id) == null || map.get(event.event_id).updated_at < event.updated_at) {
 		event.attention = true;
-		options.eventCalendarList.push(event);
+		map.put(event);
 	}
+	options.eventCalendarList = map.toArray();
 }
 
 // notification.html, content_scripts.jsとのメッセージ送受信イベント割り当て
@@ -198,9 +194,13 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 	if (message.id === 'content_script_options') {
 		sendResponse(options);
 	} else if (message.id === 'content_script_userId') {
+		var isUpdate = (options.user_id != message.userId);
 		options.user_id = message.userId;
 		options.user_nickname = message.nickname;
 		options.save();
+		if (isUpdate) {
+			timer.restart();
+		}
 		sendResponse();
 	} else if (message.id === 'content_script_ownerId') {
 		if (!message.isDelete) {

@@ -50,10 +50,9 @@
 		}
 
 		$.each(options.dateNotifyList, function (i, e) {
-			$('#notify' + e).attr('checked', 'checked').change(function () {
-				save();
-			});
+			$('#notify' + e).attr('checked', 'checked');
 		});
+		$('.dateNotify').change(save);
 
 		$.each(options.ownerList, function (i, owner) {
 			var link = $('<a>').attr('target', '_blank').attr('href', 'http://atnd.org/users/' + owner.user_id).text(owner.nickname);
@@ -70,7 +69,7 @@
 		var dateNotifyList = [];
 		$("input[type='checkbox']").each(function (i, e) {
 			if ($(e).is(':checked')) {
-				dateNotifyList.push($(e).val());
+				dateNotifyList.push(parseInt($(e).val()));
 			}
 		});
 		options.dateNotifyList = dateNotifyList;
@@ -198,14 +197,14 @@
 			<tr>
 				<th valign="top">備忘通知:</th>
 				<td>
-					<label for="notify1" style="color:black;">1日前</label><input type="checkbox" id="notify1" value="1" /><br/>
-					<label for="notify2" style="color:black;">2日前</label><input type="checkbox" id="notify2" value="2" /><br/>
-					<label for="notify3" style="color:black;">3日前</label><input type="checkbox" id="notify3" value="3" /><br/>
-					<label for="notify4" style="color:black;">4日前</label><input type="checkbox" id="notify4" value="4" /><br/>
-					<label for="notify5" style="color:black;">5日前</label><input type="checkbox" id="notify5" value="5" /><br/>
-					<label for="notify6" style="color:black;">6日前</label><input type="checkbox" id="notify6" value="6" /><br/>
-					<label for="notify7" style="color:black;">7日前</label><input type="checkbox" id="notify7" value="7" /><br/>
-					<label for="notify10" style="color:black;">10日前</label><input type="checkbox" id="notify10" value="10" /><br/>
+					<label for="notify1" style="color:black;">1日前</label><input class="dateNotify" type="checkbox" id="notify1" value="1" /><br/>
+					<label for="notify2" style="color:black;">2日前</label><input class="dateNotify" type="checkbox" id="notify2" value="2" /><br/>
+					<label for="notify3" style="color:black;">3日前</label><input class="dateNotify" type="checkbox" id="notify3" value="3" /><br/>
+					<label for="notify4" style="color:black;">4日前</label><input class="dateNotify" type="checkbox" id="notify4" value="4" /><br/>
+					<label for="notify5" style="color:black;">5日前</label><input class="dateNotify" type="checkbox" id="notify5" value="5" /><br/>
+					<label for="notify6" style="color:black;">6日前</label><input class="dateNotify" type="checkbox" id="notify6" value="6" /><br/>
+					<label for="notify7" style="color:black;">7日前</label><input class="dateNotify" type="checkbox" id="notify7" value="7" /><br/>
+					<label for="notify10" style="color:black;">10日前</label><input class="dateNotify" type="checkbox" id="notify10" value="10" /><br/>
 				</td>
 				<td></td>
 			</tr>
@@ -238,7 +237,7 @@
 						<div class="left"><a href=""><img src="images/forms/icon_plus.gif" width="21" height="21" alt="" /></a></div>
 						<div class="right">
 							<h5>キーワード</h5>
-							キーワードを設定すると設定したキーワードが含まれるイベントが見つかった場合に通知します。
+							キーワードを設定すると設定したキーワードが含まれるイベント名が見つかった場合に通知します。
 						</div>
 						<div class="clear"></div>
 						<div class="lines-dotted-short"></div>

@@ -5,11 +5,12 @@ Atnd.prototype = {
 	// result:json
 	getEvent : function() {
 		var result = null;
+		var event_id = this.event_id;
 		$.ajax( {
 			type : "GET",
 			url : "http://api.atnd.org/events/",
 			data : {
-				"event_id" : this.event_id,
+				"event_id" : event_id,
 				"format" : "json"
 			},
 			dataType : "json",
@@ -21,7 +22,7 @@ Atnd.prototype = {
 			},
 			error: function (xhr, errorText, error) {
 				if (xhr.status == 200) {
-					console.warn("Atnd.getEvent error:" + errorText); // parsererror
+					console.warn("Atnd.getEvent(" + event_id + ") error:" + errorText); // parsererror
 				}
 			}
 		});
@@ -71,11 +72,15 @@ Atnd.findByKeyword = function(keyword) {
 		async : false,
 		success : function(json) {
 			// 終了したイベントは検索結果に含まない
-			result = Atnd.filterIsNotEndedEventList(json.events);
+			Atnd.filterIsNotEndedEventList(json.events).forEach(function (event){
+				if (event.title.indexOf(keyword) >= 0) {
+					result.push(event);
+				}
+			});
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
-				console.warn("Atnd.findByKeyword error:" + errorText); // parsererror
+				console.warn("Atnd.findByKeyword(" + keyword + ") error:" + errorText); // parsererror
 			}
 		}
 	});
@@ -101,7 +106,7 @@ Atnd.findByUserId = function(user_id) {
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
-				console.warn("Atnd.findByUserId error:" + errorText); // parsererror
+				console.warn("Atnd.findByUserId(" + user_id + ") error:" + errorText); // parsererror
 			}
 		}
 	});
@@ -124,7 +129,7 @@ Atnd.findByOwnerId = function(ownerId) {
 		},
 		error: function (xhr, errorText, error) {
 			if (xhr.status == 200) {
-				console.warn("Atnd.findByOwnerId error:" + errorText); // parsererror
+				console.warn("Atnd.findByOwnerId(" + ownerId + ") error:" + errorText); // parsererror
 			}
 		}
 	});

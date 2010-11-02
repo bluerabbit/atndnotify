@@ -31,6 +31,7 @@ function updateUserEventList(options) {
 		return;
 	}
 	var events = Atnd.findByUserId(options.user_id);
+	var userEventCount = options.user_events.length;
 	var map = new EventMap(options.user_events);
 	events.forEach(function (event) {
 		var userEvent = map.get(event.event_id);
@@ -45,6 +46,12 @@ function updateUserEventList(options) {
 		}
 	});
 	options.user_events = map.toArray();
+
+	if (userEventCount == 0 && userEventCount < options.user_events.length) {
+		// 初回だけ
+		notification.open({msg: "イベントカレンダーを更新しました。クリックしてカレンダーを確認してください。"});
+	}
+
 	options.user_events.forEach(function (userEvent) {
 		if (userEvent.started_at != null) {
 			return;
@@ -104,7 +111,7 @@ function eventStartDateNotifyAndEventUpdateNotify(options) {
 			var time = (1000 * 60 * 60 * 24) * dateNotify;
 			if (time >= sai) {
 				if (!isNotified) {
-					notification.open({event_id:event.event_id, title:event.title, msg:"(備忘通知)開催日時：" + eventDate.toISOString().substring(0, 10)});
+					notification.open({event_id:event.event_id, title:event.title, msg:"(備忘通知)開催日時" + toDateString(eventDate) + '～'});
 					isNotified = true;
 				}
 				userEvent.dateNotifiedList.push(dateNotify);
@@ -118,6 +125,20 @@ function eventStartDateNotifyAndEventUpdateNotify(options) {
 	});
 
 	options.save();
+}
+
+function toDateString(date) {
+	var yyyy = date.getFullYear();
+	var mm = date.getMonth() + 1;
+	var dd = date.getDate();
+	var hh = date.getHours();
+	var mi = date.getMinutes();
+	if (mm < 10) mm = "0" + mm;
+	if (dd < 10) dd = "0" + dd;
+	if (hh < 10) hh = "0" + hh;
+	if (mi < 10) mi = "0" + mi;
+	var days = ['日', '月', '火', '水', '木', '金', '土'];
+	return yyyy + '/' + mm + '/' + dd + '(' + days[date.getDay()] + ') ' + hh + ':' + mi;
 }
 
 // キャンセル待ち→出席になったら通知

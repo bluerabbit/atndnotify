@@ -95,7 +95,7 @@
 				event.attention = false;
 			}
 			link.attr('href', 'http://atnd.org/events/' + event.event_id).attr('target', '_blank');
-			link.attr('title', '[' + event.title + ']\n' + event.catch + '\n' + event.place + '\nby '+ event.owner_nickname);
+			link.attr('title', '[' + event.title + ']\n' + '参加者:' + (event.accepted + event.waiting) + '/' + event.limit + '\n'+ event.catch + '\n' + event.place + '\nby '+ event.owner_nickname);
 			// 参加予定のイベントは注目させる
 			var isAttention = false;
 			presenceEventList.forEach(function (e) {

@@ -209,6 +209,28 @@ function addEventCalendarList(options, event) {
 	options.eventCalendarList = map.toArray();
 }
 
+//緯度経度から住所を取得する
+function latlngToAddress(lat, lon) {
+	var latlng = lat + ',' + lon;
+	var result = "";
+	$.ajax({
+	  url : 'http://maps.google.com/maps/api/geocode/json',
+	  data : {
+	    latlng: latlng,
+	    sensor: true
+	  },
+	  dataType : 'json',
+	  async : false,
+	  success : function(json){
+		  var address = json.results[0];
+		  if (address && address.formatted_address) {
+			  result = address.formatted_address.replace('日本, ', '');
+		  }
+	  }
+	});
+	return result;
+}
+
 // notification.html, content_scripts.jsとのメッセージ送受信イベント割り当て
 chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 	console.debug(message);
@@ -240,6 +262,9 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 		}
 		options.save();
 		sendResponse();
+	} else if (message.id === 'getLatlngToAddress') {
+		var fromAddress = latlngToAddress(message.lat, message.lon);
+		sendResponse(fromAddress);
 	} else {
 		// notification.html
 		sendResponse(notification.getItem(message.id));

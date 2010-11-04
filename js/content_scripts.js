@@ -62,3 +62,26 @@ function setOwnerIdButton() {
 }
 setUserIdAndNickname();
 setOwnerIdButton();
+
+// 経路案内ボタンを追加する
+function setTransitButton() {
+	var eventLocation = $('.location span');
+	if (eventLocation.length == 0 || eventLocation.text().length == 0 || $('#event_map').length == 0) {
+		return;
+	}
+	var toAddress = eventLocation.text().substring(1, eventLocation.text().length - 1);
+	navigator.geolocation.getCurrentPosition(function(position) {
+		chrome.extension.sendRequest({id:'getLatlngToAddress', lat:position.coords.latitude, lon:position.coords.longitude}, function(fromAddress){
+			var frm = '<form method="get" action="http://www.google.co.jp/transit" target="_blank">'
+				+ '  <input type="hidden" name="saddr" value="' + fromAddress + '" />'
+				+ '  <input type="hidden" name="daddr" value="' + toAddress + '" />'
+				+ '  <input type="hidden" name="date" value="" />'
+				+ '  <input type="hidden" name="time" value="" />'
+				+ '  <input type="hidden" name="ttype" value="arr" />'
+				+ '  <input type="submit" value="経路案内">'
+				+ '</form>';
+			eventLocation.after($('<div>').html(frm));
+		});
+	});
+}
+setTransitButton();

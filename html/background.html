@@ -255,7 +255,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 			var list = [];
 			$.each(options.ownerList, function (i, owner){
 				if (message.ownerId != owner.user_id) {
-					list.push(ownerId);
+					list.push(owner);
 				}
 			});
 			options.ownerList = list;

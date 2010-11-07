@@ -162,21 +162,25 @@ function eventUserStatusNotify(options) {
 
 // 特定キーワードを含むイベントが見つかったら通知する
 function keywordNotify(options) {
-	var list = [];
+	var list = {};
 	options.keywordList.forEach(function (keyword){
 		console.debug("keyword:" + keyword);
 		var events = Atnd.findByKeyword(keyword);
 		events.forEach(function (event){
 			addEventCalendarList(options, event);
 			if ($.inArray(event.event_id, options.keywordNotifiedList) == -1) {
-				list.push(keyword);
+				if (list[keyword] == null) {
+					list[keyword] = 1;
+				} else {
+					list[keyword]++;
+				}
 				options.keywordNotifiedList.push(event.event_id);
 			}
 		});
 	});
-	$.each($.unique(list), function (i, keyword) {
-		// TODO:○件のイベントが見つかりました。に変更する。
-		notification.open({title:keyword, msg: "イベントが見つかりました。アイコンをクリックしてカレンダーを確認してください。"});
+	Object.keys(list).forEach(function(keyword){
+		var count = list[keyword];
+		notification.open({title:keyword, msg: count + "件のイベントが見つかりました。クリックしてカレンダーを確認してください。"});
 	});
 	options.save();
 }
@@ -200,6 +204,7 @@ function ownerNotify(options) {
 	options.save();
 }
 
+// イベントカレンダーに登録する
 function addEventCalendarList(options, event) {
 	var map = new EventMap(options.eventCalendarList);
 	if (map.get(event.event_id) == null || map.get(event.event_id).updated_at < event.updated_at) {

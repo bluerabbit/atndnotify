@@ -12,6 +12,8 @@
 		$("#news").attr("href", host + 'news.html');
 		$("#about").attr("href", host + 'about.html');
 		$("#calendar").attr("href", host + 'calendar.html');
+		var msg = '@bluerabbit777jp  #atndnotify ' + $('#ver').text() + ' http://goo.gl/xeCe';
+		$('#tweet').attr('target', '_blank').attr('href', 'http://twitter.com/home/?status=' + encodeURIComponent(msg));
 
 	});
 	</script>
@@ -77,9 +79,10 @@
 		<div id="content-table-inner">
 			<div id="table-content">
 			<h2>Name:ATND Notify</h2>
-			<h2>Version:0.11.2.1</h2>
+			<h2>Version:<span id="ver">0.11.2.1</span></h2>
 			<h2>Author:<a href="http://twitter.com/bluerabbit777jp" target="_blank">@bluerabbit777jp</a></h2>
 			<h2>License:<a href="http://creativecommons.org/licenses/MIT/" target="_blank">The MIT license</a></h2>
+			<h2><a id="tweet" href=""><img src="images/shared/tweet.png"></img></a></h2>
 			</div>
 			<div class="clear"></div>
 		</div>

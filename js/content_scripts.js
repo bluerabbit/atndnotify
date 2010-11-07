@@ -29,24 +29,6 @@ function setOwnerIdButton() {
 	}
 	var ownerNickname = owner.text();
 	getOptions(function (options) {
-		function createRemoveButton() {
-			var removeButton = $('<input type="button">').val('通知解除する').click(function (){
-				chrome.extension.sendRequest({id:'content_script_ownerId', ownerId:ownerId, ownerNickname:ownerNickname, isDelete:true}, function(item){
-					alert('通知を解除しました。');
-					removeButton.replaceWith(createAddButton());
-				});
-			});
-			return removeButton;
-		}
-		function createAddButton() {
-			var addButton = $('<input type="button">').val('この管理者のイベントは通知する').click(function (){
-				chrome.extension.sendRequest({id:'content_script_ownerId', ownerId:ownerId, ownerNickname:ownerNickname, isDelete:false}, function(item){
-					alert('この管理者が新規イベントを立てたら通知するように設定しました。');
-					addButton.replaceWith(createRemoveButton());
-				});
-			});
-			return addButton;
-		}
 		var haveOwnerId = false;
 		$.each(options.ownerList, function (i, owner){
 			if (ownerId === owner.user_id) {
@@ -54,9 +36,9 @@ function setOwnerIdButton() {
 			}
 		});
 		if (!haveOwnerId) {
-			owner.after(createAddButton());
+			owner.after(createAddButton(ownerId, ownerNickname));
 		} else {
-			owner.after(createRemoveButton());
+			owner.after(createRemoveButton(ownerId, ownerNickname));
 		}
 	});
 }
@@ -85,3 +67,48 @@ function setTransitButton() {
 	});
 }
 setTransitButton();
+
+
+function setOwnerIdButtonUserPage() {
+	var obj = $('#main_title h1');
+	if (obj.length == 0 || location.href.indexOf("http://atnd.org/users/") == -1) {
+		return;
+	}
+	var ownerId = location.href.substring("http://atnd.org/users/".length);
+	if (isNaN(ownerId)) {
+		return;
+	}
+	var ownerNickname = obj.text().trim();
+	getOptions(function (options) {
+		var haveOwnerId = false;
+		$.each(options.ownerList, function (i, owner){
+			if (ownerId === owner.user_id) {
+				haveOwnerId = true;
+			}
+		});
+		if (!haveOwnerId) {
+			obj.parent().find('p').append(createAddButton(ownerId, ownerNickname));
+		} else {
+			obj.parent().find('p').after(createRemoveButton(ownerId, ownerNickname));
+		}
+	});
+}
+function createRemoveButton(ownerId, ownerNickname) {
+	var removeButton = $('<input type="button">').val('通知解除する').click(function (){
+		chrome.extension.sendRequest({id:'content_script_ownerId', ownerId:ownerId, ownerNickname:ownerNickname, isDelete:true}, function(item){
+			alert('通知を解除しました。');
+			removeButton.replaceWith(createAddButton(ownerId, ownerNickname));
+		});
+	});
+	return removeButton;
+}
+function createAddButton(ownerId, ownerNickname) {
+	var addButton = $('<input type="button">').val('この管理者のイベントは通知する').click(function (){
+		chrome.extension.sendRequest({id:'content_script_ownerId', ownerId:ownerId, ownerNickname:ownerNickname, isDelete:false}, function(item){
+			alert('この管理者が新規イベントを立てたら通知するように設定しました。');
+			addButton.replaceWith(createRemoveButton(ownerId, ownerNickname));
+		});
+	});
+	return addButton;
+}
+setOwnerIdButtonUserPage();

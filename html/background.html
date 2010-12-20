@@ -212,7 +212,7 @@ function userOwnerEventCapacityNotify(options) {
 	}
 	var events = Atnd.findByOwnerId(options.user_id);
 	events.forEach(function (event) {
-		if (event.limit <= event.accepted) {
+		if (event.limit && event.limit <= event.accepted) {
 			if ($.inArray(event.event_id, options.userCapacityNotifiedList) == -1) {
 				notification.open({event_id:event.event_id, title:event.title, msg:"満席になりました。\n定員:"+  event.limit + ' キャンセル待ち:' + event.waiting});
 				options.userCapacityNotifiedList.push(event.event_id);

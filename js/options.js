@@ -4,7 +4,7 @@ var Options = function (values, storageKey){
 		user_id:'',
 		user_nickname:'',
 		user_events:[],           // 参加しているイベント{event_id, title, status, updated_at, dateNotifiedList:[], (started_at, ended_at, owner_id, owner_nickname, accepted, limit, waiting, address, lon, lat)}
-		timerMI:1,                // 監視間隔(分)
+		timerMI:5,                // 監視間隔(分)
 		autoCloseTimeSS:30,       // 通知ウィンドウを閉じるまでの時間(秒) 0の時は閉じない
 		eventCalendarList:[],     // カレンダーに表示するイベント
 		dateNotifyList:[3, 10],   // 何日前になったら備忘通知する
@@ -20,7 +20,7 @@ var Options = function (values, storageKey){
 	values.user_nickname = values.user_nickname || '';
 	values.user_events = values.user_events || [];
 	values.dateNotifyList = values.dateNotifyList || [3, 10];
-	values.timerMI = 1;
+	values.timerMI = 5;
 	values.autoCloseTimeSS = 30;
 	values.userCapacityNotifiedList = values.userCapacityNotifiedList || [];
 

@@ -4,9 +4,12 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>ATND Notify About</title>
 	<link rel="stylesheet" href="css/screen.css" type="text/css" media="screen" title="default" />
-	<script src="js/jquery/jquery-1.4.1.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/jquery/jquery-1.4.1.min.js" ></script>
+	<script type="text/javascript" src="/js/manifest.js"></script>
 	<script type="text/javascript">
 	$(function(){
+		var manifest = Manifest.load();
+		$('#ver').text(manifest.version);
 		var host = 'chrome-extension://' + location.host + '/html/options/';
 		$("#config").attr("href", host + 'config.html');
 		$("#news").attr("href", host + 'news.html');
@@ -14,7 +17,6 @@
 		$("#calendar").attr("href", host + 'calendar.html');
 		var msg = '@bluerabbit777jp  #atndnotify ' + $('#ver').text() + ' http://goo.gl/xeCe';
 		$('#tweet').attr('target', '_blank').attr('href', 'http://twitter.com/home/?status=' + encodeURIComponent(msg));
-
 	});
 	</script>
 </head>
@@ -79,7 +81,7 @@
 		<div id="content-table-inner">
 			<div id="table-content">
 			<h2>Name:ATND Notify</h2>
-			<h2>Version:<span id="ver">0.11.7.1</span></h2>
+			<h2>Version:<span id="ver"></span></h2>
 			<h2>Author:<a href="http://twitter.com/bluerabbit777jp" target="_blank">@bluerabbit777jp</a></h2>
 			<h2>License:<a href="http://creativecommons.org/licenses/MIT/" target="_blank">The MIT license</a></h2>
 			<h2><a id="tweet" href=""><img src="images/shared/tweet.png"></img></a></h2>

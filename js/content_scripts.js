@@ -75,6 +75,9 @@ function setOwnerIdButtonUserPage() {
 		return;
 	}
 	var ownerId = location.href.substring("http://atnd.org/users/".length);
+	if (location.href.indexOf("http://atnd.org/users/show/") == 0) {
+		ownerId = location.href.substring("http://atnd.org/users/show/".length);
+	}
 	if (isNaN(ownerId)) {
 		return;
 	}

@@ -12,74 +12,76 @@
 	<script type="text/javascript">
 	var BG = chrome.extension.getBackgroundPage();
 	var options = BG.options;
-    var showDate = new Date();
-    showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
-    var eventList =options.eventCalendarList;
-    $(function () {
+	var showDate = new Date();
+	showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
+	var eventList =options.eventCalendarList;
+	$(function () {
 		var host = 'chrome-extension://' + location.host + '/html/options/';
 		$("#config").attr("href", host + 'config.html');
 		$("#news").attr("href", host + 'news.html');
 		$("#about").attr("href", host + 'about.html');
 		$("#calendar").attr("href", host + 'calendar.html');
 
-      createCalender(showDate.getFullYear(), showDate.getMonth()+1);
-      bindEvent(eventList);
+		createGoogleCalendarLink();
 
-      $('#back').click(function () {
-    	  showDate.setMonth(showDate.getMonth()-1);
-    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
-    	  bindEvent(eventList);
-      });
+		createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+		bindEvent(eventList);
 
-      $('#presentMonth').click(function () {
-    	  showDate = new Date();
-    	  showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
-    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
-    	  bindEvent(eventList);
-      });
+		$('#back').click(function () {
+			showDate.setMonth(showDate.getMonth()-1);
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
+		});
 
-      $('#next').click(function () {
-    	  showDate.setMonth(showDate.getMonth()+1);
-    	  createCalender(showDate.getFullYear(), showDate.getMonth()+1);
-    	  bindEvent(eventList);
-      });
-    });
+		$('#presentMonth').click(function () {
+			showDate = new Date();
+			showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
+		});
 
-    function createCalender(year, month) {
-      $("#caption").text(year + "年" + month + "月");
-      var list = createCalenderDateList(year, month);
-      var table = $("#cal");
-      table.find("tr[class!='dow']").remove();
-      var tr = $('<tr>');
-      var now = new Date();
-      list.forEach(function (date, i) {
-        var id = toYyyyMmDd(date);
-        var td = $('<td>').attr('id', id);
-        if (date.getMonth()+1 == month) {
-          td.append($('<span>').addClass('span_date').text(date.getDate()));
-        } else {
-          td.append($('<span>').addClass('span_date_other_month').text(date.getDate()));
-        }
+		$('#next').click(function () {
+			showDate.setMonth(showDate.getMonth()+1);
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
+		});
+	});
 
-        if (date.getDay() == 0) {
-          td.addClass('sun');
-        } else if (date.getDay() == 6) {
-          td.addClass('sat');
-        }
-        if (now.toDateString() == date.toDateString()) {
-            td.addClass('today');
-        }
-        tr.append(td);
-        if ((i+1)%7 == 0) {
-          table.append(tr);
-          tr = $('<tr>');
-        }
-      });
-    }
+	function createCalender(year, month) {
+		$("#caption").text(year + "年" + month + "月");
+		var list = createCalenderDateList(year, month);
+		var table = $("#cal");
+		table.find("tr[class!='dow']").remove();
+		var tr = $('<tr>');
+		var now = new Date();
+		list.forEach(function (date, i) {
+		var id = toYyyyMmDd(date);
+		var td = $('<td>').attr('id', id);
+		if (date.getMonth()+1 == month) {
+			td.append($('<span>').addClass('span_date').text(date.getDate()));
+		} else {
+			td.append($('<span>').addClass('span_date_other_month').text(date.getDate()));
+		}
 
-    function bindEvent(eventList) {
-    	var userEventMap = new EventMap(options.user_events);
-    	eventList.forEach(function (event, i){
+		if (date.getDay() == 0) {
+			td.addClass('sun');
+		} else if (date.getDay() == 6) {
+			td.addClass('sat');
+		}
+		if (now.toDateString() == date.toDateString()) {
+			td.addClass('today');
+		}
+		tr.append(td);
+		if ((i+1)%7 == 0) {
+			table.append(tr);
+			tr = $('<tr>');
+		}
+		});
+	}
+
+	function bindEvent(eventList) {
+		var userEventMap = new EventMap(options.user_events);
+		eventList.forEach(function (event, i){
 			var cell = $("#" + toYyyyMmDd(Atnd.toDate(event.started_at)));
 			if (cell.length == 0) {
 				return;
@@ -108,11 +110,11 @@
 			if (cell.find('ul').length == 0) {
 				cell.append(ul);
 			}
-    	});
-    	options.save();
-    }
+		});
+		options.save();
+	}
 
-    function getEventTimeText(event) {
+	function getEventTimeText(event) {
 		var startDate = Atnd.toDate(event.started_at);
 		var text = startDate.toLocaleTimeString().substring(0, 5) + '～';
 		if (event.ended_at) {
@@ -122,30 +124,47 @@
 			}
 		}
 		return text;
-    }
+	}
 
-    function createCalenderDateList(year, month) {
-      var firstDate = new Date(year, month - 1, 1);
-      var startDate = new Date(year, month - 1, 1 - firstDate.getDay());
-      var list = [];
-      while(true) {
-        var d = new Date(startDate);
-        d.setDate(d.getDate() + list.length);
-        list.push(d);
-        if (list.length == (7 * 6)) {
-          return list;
-        }
-      }
-    }
+	function createCalenderDateList(year, month) {
+		var firstDate = new Date(year, month - 1, 1);
+		var startDate = new Date(year, month - 1, 1 - firstDate.getDay());
+		var list = [];
+		while(true) {
+		var d = new Date(startDate);
+		d.setDate(d.getDate() + list.length);
+		list.push(d);
+		if (list.length == (7 * 6)) {
+			return list;
+		}
+		}
+	}
 
-    function toYyyyMmDd(date) {
-      var mm = date.getMonth() + 1;
-      var dd = date.getDate();
-      if (mm < 10) mm = "0" + mm;
-      if (dd < 10) dd = "0" + dd;
-      return String(date.getFullYear()) + mm + dd;
-    }
-  </script>
+	function toYyyyMmDd(date) {
+		var mm = date.getMonth() + 1;
+		var dd = date.getDate();
+		if (mm < 10) mm = "0" + mm;
+		if (dd < 10) dd = "0" + dd;
+		return String(date.getFullYear()) + mm + dd;
+	}
+
+	function urlFormat(str) {
+		var newstr = str.replace(/^\s+/g, "");
+		return encodeURIComponent(newstr.replace(/\s+$/g, ""));
+	}
+
+	function createGoogleCalendarLink() {
+		if (options.user_id) {
+			var iCalUrl = "http://api.atnd.org/events/?user_id=" + options.user_id + "&count=1000&format=ics";
+			$("#addGoogleCalendarLink").attr('href', "http://www.google.com/calendar/render?cid=" + urlFormat(iCalUrl));
+			$("#addGoogleCalendarImg").attr('src', chrome.extension.getURL('/html/options/images/addGoogleCalenderButton.gif'))
+									.css('width', '100px');
+		} else {
+			$("#addGoogleCalendarSpan").hide();
+		}
+	}
+
+	</script>
 </head>
 <body>
 <div id="page-top-outer">
@@ -204,20 +223,26 @@
 		<!--  start content-table-inner -->
 		<div id="content-table-inner">
 		<div id="xx">
+			<div style="height: 35px;">
 				<input type="button" id="back" value="前月" style="width: 70px; height: 30px;" />&nbsp;
 				|&nbsp;<input type="button" id="presentMonth" value="当月" style="width: 70px; height: 30px;" />&nbsp;
 				|&nbsp;<input type="button" id="next" value="来月" style="width: 70px; height: 30px;" />
+				|&nbsp;
+				<span id="addGoogleCalendarSpan" style="position:absolute;">
+					<a id="addGoogleCalendarLink" href="http://www.google.com/calendar/render?cid=" target="_blank"><img id="addGoogleCalendarImg" src="" border=0></a>
+				</span>
+			</div>
 			<table id="cal">
-			    <caption id="caption"></caption>
-			    <tr class="dow">
-			      <th style="width:30" class="sun">日</th>
-			      <th style="width:30" >月</th>
-			      <th style="width:30" >火</th>
-			      <th style="width:30" >水</th>
-			      <th style="width:30" >木</th>
-			      <th style="width:30" >金</th>
-			      <th style="width:30"  class="sat">土</th>
-			    </tr>
+				<caption id="caption"></caption>
+				<tr class="dow">
+					<th style="width:30" class="sun">日</th>
+					<th style="width:30" >月</th>
+					<th style="width:30" >火</th>
+					<th style="width:30" >水</th>
+					<th style="width:30" >木</th>
+					<th style="width:30" >金</th>
+					<th style="width:30"  class="sat">土</th>
+				</tr>
 			</table>
 			</div>
 		</div>

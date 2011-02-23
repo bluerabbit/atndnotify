@@ -1,7 +1,7 @@
 {
   "name": "ATND Notify",
   "description": "ATNDで参加予定イベントの開催日が近づくと備忘通知したり、イベントの内容変更や補欠から繰り上がった場合に通知します。特定の管理者が新規イベントを作ったら通知したり、特定キーワードを含むイベントが出来たら通知する機能もあります。",
-  "version": "1.0.1.0",
+  "version": "1.0.2.0",
   "background_page": "html/background.html",
   "options_page": "html/options/config.html",
   "browser_action": {

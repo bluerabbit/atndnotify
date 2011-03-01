@@ -52,18 +52,26 @@ function setTransitButton() {
 		return;
 	}
 	var toAddress = eventLocation.text().substring(1, eventLocation.text().length - 1);
-	navigator.geolocation.getCurrentPosition(function(position) {
-		chrome.extension.sendRequest({id:'getLatlngToAddress', lat:position.coords.latitude, lon:position.coords.longitude}, function(fromAddress){
-			var frm = '<form method="get" action="http://www.google.co.jp/transit" target="_blank">'
-				+ '  <input type="hidden" name="saddr" value="' + fromAddress + '" />'
-				+ '  <input type="hidden" name="daddr" value="' + toAddress + '" />'
-				+ '  <input type="hidden" name="date" value="" />'
-				+ '  <input type="hidden" name="time" value="" />'
-				+ '  <input type="hidden" name="ttype" value="arr" />'
-				+ '  <input type="submit" value="経路案内">'
-				+ '</form>';
-			eventLocation.after($('<div>').html(frm));
+	var frm = '<form id="googleTransitFrom" method="get" action="http://www.google.co.jp/transit" target="_blank">'
+		+ '  <input type="hidden" id="fromAddress" name="saddr" value="" />'
+		+ '  <input type="hidden" name="daddr" value="' + toAddress + '" />'
+		+ '  <input type="hidden" name="date" value="" />'
+		+ '  <input type="hidden" name="time" value="" />'
+		+ '  <input type="hidden" name="ttype" value="arr" />'
+		+ '  <input type="submit" id="googleTransit" value="経路案内">'
+		+ '</form>';
+	eventLocation.after($('<div>').html(frm));
+
+	$('#googleTransit').click(function () {
+		navigator.geolocation.getCurrentPosition(function(position) {
+			chrome.extension.sendRequest({id:'getLatlngToAddress', lat:position.coords.latitude, lon:position.coords.longitude}, function(fromAddress){
+				$('#fromAddress').val(fromAddress);
+				location.href = "http://www.google.co.jp/transit?" + $('#googleTransitFrom').serialize();
+			});
+		}, function () {
+			location.href = "http://www.google.co.jp/transit?" + $('#googleTransitFrom').serialize();
 		});
+		return false;
 	});
 }
 setTransitButton();

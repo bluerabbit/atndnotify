@@ -272,6 +272,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 			// 通知設定
 			var now = new Date();
 			options.ownerList.push({user_id:message.ownerId, nickname:message.ownerNickname, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString()});
+			notification.open({ownerId:message.ownerId, title:'イベント通知設定', msg: message.ownerNickname + "さんを通知設定しました"});
 		} else {
 			// 通知解除
 			var list = [];
@@ -281,6 +282,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 				}
 			});
 			options.ownerList = list;
+			notification.open({ownerId:message.ownerId, title:'イベント通知設定', msg: message.ownerNickname + "さんの通知設定を解除しました"});
 		}
 		options.save();
 		sendResponse();

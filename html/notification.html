@@ -29,6 +29,13 @@ chrome.extension.sendRequest({id:location.hash.slice(1)}, function(item){
 		$('#title').text("[" + item.title + "]").append($('<br>'));
 		$('#message').text(item.msg);
 		$('#img').attr('src', icon);
+	} else if (item.ownerId) {
+		// Userページへのリンク
+		$('#icon_link').attr('href', calendarLink);
+		$('#link').attr('href', 'http://atnd.org/users/' + item.ownerId);
+		$('#title').text("[" + item.title + "]").append($('<br>'));
+		$('#message').text(item.msg);
+		$('#img').attr('src', icon);
 	} else {
 		// Calendarへのリンク
 		$("#icon_link").attr("href", calendarLink);

@@ -13,6 +13,7 @@ var Options = function (values, storageKey){
 		ownerList:[],             // {user_id, nickname, updated_at}
 		ownerNotifiedList:[],     // 通知済みeventId
 		userCapacityNotifiedList:[],// 満席通知済みeventId
+		appVersion:"0.0.0.0",
 		schemaVersion:1
 	};
 
@@ -23,6 +24,7 @@ var Options = function (values, storageKey){
 	values.timerMI = 5;
 	values.autoCloseTimeSS = 30;
 	values.userCapacityNotifiedList = values.userCapacityNotifiedList || [];
+	values.appVersion = values.appVersion || "0.0.0.0";
 
 	var self = this;
 	Object.keys(values).forEach(function(key){

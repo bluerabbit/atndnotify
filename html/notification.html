@@ -6,7 +6,7 @@
 <style>
 body{
 	overflow:hidden;
-	background: url(../images/notificationBG.gif) top left repeat;
+	background: url(/images/notificationBG.gif) top left repeat;
 	color: #e79300;
 	font-family: Tahoma;
 	font-weight: bold;
@@ -19,45 +19,65 @@ body{
 }
 </style>
 <script type="text/javascript">
-var calendarLink = 'chrome-extension://' + location.host + '/html/options/calendar.html';
-var icon = 'chrome-extension://' + location.host + '/images/icon.png';
 chrome.extension.sendRequest({id:location.hash.slice(1)}, function(item){
 	if (item.event_id) {
-		// イベントへのリンク
-		$('#icon_link').attr('href', calendarLink);
+		// 例) [title]nameさんが新規イベントを作成しました。
+		// 例) [title]参加できるようになりました
+		// 例) [title]満席になりました。定員:n キャンセル待ち:n
+		// 例) [title]イベント内容に変更がありました
+		// 例) [title](備忘通知)開催日時 yyyy/mm/dd(day) hh:mi
 		$('#link').attr('href', 'http://atnd.org/events/' + item.event_id);
-		$('#title').text("[" + item.title + "]").append($('<br>'));
+		$('#title').text("[" + item.title + "]");
 		$('#message').text(item.msg);
-		$('#img').attr('src', icon);
+		tweet('['+ item.title + ']' + item.msg + ' http://atnd.org/events/' + item.event_id);
 	} else if (item.ownerId) {
 		// Userページへのリンク
-		$('#icon_link').attr('href', calendarLink);
-		$('#link').attr('href', 'http://atnd.org/users/' + item.ownerId);
-		$('#title').text("[" + item.title + "]").append($('<br>'));
+		// 例) [イベント通知設定]nameさんを通知設定しました
+		// 例) [イベント通知設定]nameさんを通知設定を解除しました
+		$('#link').attr('href', 'http://atnd.org/users/' + item.ownerId).click(function () {
+			window.close();
+		});
+		$('#title').text("[" + item.title + "]");
 		$('#message').text(item.msg);
-		$('#img').attr('src', icon);
-	} else {
-		// Calendarへのリンク
-		$("#icon_link").attr("href", calendarLink);
-		$("#link").attr("href", calendarLink).attr('target', 'calendar');
-		if (item.title && item.title != '') {
-			$('#title').text('[' + item.title + ']').append($('<br>'));
+		if (item.msg.indexOf("解除") == -1) {
+			tweet('['+ item.title + ']' + item.name + 'さん( http://atnd.org/users/' + item.ownerId + ' )を通知設定しました');
 		}
+	} else if (item.version) {
+		// 更新通知
+		$('#title').text('[ATND Notify Update]');
+		$('#message').text(item.version + 'に更新されました。');
+		$('#link').attr('href', "/html/options/news.html").click(function () {
+			window.close();
+		});
+	} else {
+		// 例) [イベントカレンダーを更新]クリックしてカレンダーを確認してください。
+		// 例) [keyword]3件のイベントが見つかりました。クリックしてカレンダーを確認してください。
+		$("#link").attr("href", "/html/options/calendar.html").attr('target', 'calendar');
+		$('#title').text('[' + item.title + ']');
 		$('#message').text(item.msg);
-		$('#img').attr('src', icon);
 	}
 });
+
+function tweet(message) {
+	var tweet = encodeURIComponent(message + ' #atndnotify http://goo.gl/xeCe');
+	$('#tweetLink').attr('href', 'http://twitter.com/home/?status=' + tweet);
+	$('#tweet').show();
+}
 </script>
 </head>
 <body>
 	<table border="0" width="100%" cellpadding="0" cellspacing="0">
 	<tr>
 		<td height="70">
-			<a id="icon_link" target="atndnotify_icon"><img id="img" ></a>
+			<a id="icon_link" href="/html/options/calendar.html" target="atndnotify_icon"><img id="img" src="/images/icon.png"></a>
 			<a id="link" target="_blank">
-				<span id="title" ></span>
+				<span id="title" ></span><br />
 				<span id="message" ></span>
 			</a>
+			<br />
+			<div id="tweet" style="display:none;padding:5px;">
+				<a id="tweetLink" target="_blank" ><img src="/images/tweet.png" /></a>
+			<div>
 		</td>
 	</tr>
 	</table>

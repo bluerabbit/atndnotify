@@ -8,11 +8,15 @@
 <script type="text/javascript" src="/js/timer.js"></script>
 <script type="text/javascript" src="/js/notification.js"></script>
 <script type="text/javascript" src="/js/options.js"></script>
+<script type="text/javascript" src="/js/manifest.js"></script>
 <script type="text/javascript">
 var options = Options.load();
 var notification = new Notification('html/notification.html', 1000 * options.autoCloseTimeSS);
 var timer = new Timer(1000 * 60 * options.timerMI); // n分に一回
+
 function main(options) {
+	extensionUpdateNotify(options);
+
 	timer.start(function () {
 		console.log("timer run");
 		console.log(options);
@@ -25,6 +29,21 @@ function main(options) {
 	});
 }
 main(options);
+
+// ATND Notifyがバージョンアップされたら通知
+function extensionUpdateNotify(options) {
+	var manifest = Manifest.load();
+	if (options.appVersion == "0.0.0.0") {
+		// 初期インストール
+		options.appVersion = manifest.version;
+		options.save();
+	} else if (options.appVersion != manifest.version) {
+		// アップデート
+		options.appVersion = manifest.version;
+		options.save();
+		notification.open({version:options.appVersion});
+	}
+}
 
 // 参加イベントの一覧を更新する
 function updateUserEventList(options) {
@@ -50,7 +69,7 @@ function updateUserEventList(options) {
 
 	if (userEventCount == 0 && userEventCount < options.user_events.length) {
 		// 初回だけ
-		notification.open({msg: "イベントカレンダーを更新しました。クリックしてカレンダーを確認してください。"});
+		notification.open({title:"イベントカレンダーを更新", msg: "クリックしてカレンダーを確認してください。"});
 	}
 
 	options.user_events.forEach(function (userEvent) {
@@ -272,7 +291,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 			// 通知設定
 			var now = new Date();
 			options.ownerList.push({user_id:message.ownerId, nickname:message.ownerNickname, updated_at:now.toISOString().substring(0,10) + "T" + now.toLocaleTimeString()});
-			notification.open({ownerId:message.ownerId, title:'イベント通知設定', msg: message.ownerNickname + "さんを通知設定しました"});
+			notification.open({ownerId:message.ownerId, title:'イベント通知設定', name:message.ownerNickname, msg:message.ownerNickname + "さんを通知設定しました"});
 		} else {
 			// 通知解除
 			var list = [];
@@ -282,7 +301,7 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 				}
 			});
 			options.ownerList = list;
-			notification.open({ownerId:message.ownerId, title:'イベント通知設定', msg: message.ownerNickname + "さんの通知設定を解除しました"});
+			notification.open({ownerId:message.ownerId, title:'イベント通知設定', name:message.ownerNickname, msg:message.ownerNickname + "さんの通知設定を解除しました"});
 		}
 		options.save();
 		sendResponse();

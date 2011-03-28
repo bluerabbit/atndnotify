@@ -39,9 +39,12 @@ function extensionUpdateNotify(options) {
 		options.save();
 	} else if (options.appVersion != manifest.version) {
 		// アップデート
+		if (options.appVersion.substring(0, options.appVersion.lastIndexOf(".")) != manifest.version.substring(0, manifest.version.lastIndexOf("."))) {
+			// 末尾のバージョンNoを除いた値が更新されていたら通知(末尾のバージョンNoだけが変わっている場合は通知しない)
+			notification.open({version:manifest.version});
+		}
 		options.appVersion = manifest.version;
 		options.save();
-		notification.open({version:options.appVersion});
 	}
 }
 

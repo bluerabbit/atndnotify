@@ -1,5 +1,5 @@
 function getOptions(fn) {
-	chrome.extension.sendRequest({id:'content_script_options'}, function(options){
+	chrome.extension.sendRequest({id: 'content_script_options'}, function(options) {
 		fn(options);
 	});
 }
@@ -14,7 +14,7 @@ function setUserIdAndNickname() {
 	if (isNaN(userId)) {
 		return;
 	}
-	chrome.extension.sendRequest({id:'content_script_userId', userId:userId, nickname:user.text()}, function(item){
+	chrome.extension.sendRequest({id: 'content_script_userId', userId: userId, nickname: user.text()}, function(item) {
 	});
 }
 setUserIdAndNickname();

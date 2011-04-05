@@ -4,18 +4,28 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
 <style>
-body{
-	overflow:hidden;
-	background: url(/images/notificationBG.gif) top left repeat;
-	color: #e79300;
-	font-family: Tahoma;
-	font-weight: bold;
-	padding: 0 0 0 5px;
+body {
+    overflow:hidden;
+    background: #FFFACD;
+    font-family: Tahoma;
+    font-weight: bold;
+    padding: 0 0 0 5px;
 }
-#img{
-	float:left;
-	max-width:48px;
-	min-width:48px;
+p {
+    margin: 0 0 0 0.5em;
+}
+a {
+    color: #F60;
+}
+.icon {
+    float: left;
+    padding: 0 3px 0 0;
+}
+.box {
+    clear: both;
+}
+.box .text {
+    overflow: auto;
 }
 </style>
 <script type="text/javascript">
@@ -66,20 +76,22 @@ function tweet(message) {
 </script>
 </head>
 <body>
-	<table border="0" width="100%" cellpadding="0" cellspacing="0">
-	<tr>
-		<td height="70">
-			<a id="icon_link" href="/html/options/calendar.html" target="atndnotify_icon"><img id="img" src="/images/icon.png"></a>
-			<a id="link" target="_blank">
-				<span id="title" ></span><br />
-				<span id="message" ></span>
-			</a>
-			<br />
-			<div id="tweet" style="display:none;padding:5px;">
-				<a id="tweetLink" target="_blank" ><img src="/images/tweet.png" /></a>
-			<div>
-		</td>
-	</tr>
-	</table>
+<div class="box">
+    <div class="icon">
+        <a href="/html/options/calendar.html" target="atndnotify_icon"><img src="/images/icon_48.png"></a>
+    </div>
+    <div class="text">
+        <p>
+            <a id="link" target="_blank">
+                <span id="title" ></span><br />
+                <span id="message" ></span>
+            </a>
+            <br />
+            <div id="tweet" style="display:none;padding:5px;">
+                <a id="tweetLink" target="_blank" ><img src="/images/tweet.png" /></a>
+            <div>
+        </p>
+    </div>
+</div>
 </body>
 </html>

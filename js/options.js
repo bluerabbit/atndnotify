@@ -8,6 +8,7 @@ var Options = function(values, storageKey) {
         autoCloseTimeSS: 30,       // 通知ウィンドウを閉じるまでの時間(秒) 0の時は閉じない
         eventCalendarList: [],     // カレンダーに表示するイベント
         dateNotifyList: [3, 10],   // 何日前になったら備忘通知する
+        calenderType: 'grid',      // カレンダーの表示形式を指定  "grid":"グリッド形式","list":"リスト形式"
         keywordList: [],           // 検索キーワード
         keywordNotifiedList: [],   // 通知済みeventId
         ownerList: [],             // {user_id, nickname, updated_at}
@@ -21,6 +22,7 @@ var Options = function(values, storageKey) {
     values.user_nickname = values.user_nickname || '';
     values.user_events = values.user_events || [];
     values.dateNotifyList = values.dateNotifyList || [3, 10];
+    values.calenderType = values.calenderType || 'grid';
     values.timerMI = 5;
     values.autoCloseTimeSS = 30;
     values.userCapacityNotifiedList = values.userCapacityNotifiedList || [];

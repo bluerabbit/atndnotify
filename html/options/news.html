@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>ATND Notify News</title>
+	<link rel="stylesheet" href="css/screen.css" type="text/css" media="screen" title="default" />
+	<!--  jquery core -->
+	<script src="js/jquery/jquery-1.4.1.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	$(function(){
+		var host = 'chrome-extension://' + location.host + '/html/options/';
+		$("#config").attr("href", host + 'config.html');
+		$("#news").attr("href", host + 'news.html');
+		$("#about").attr("href", host + 'about.html');
+		$("#calendar").attr("href", host + 'calendar.html');
+
+	});
+	</script>
+	<style>
+	#table-content {
+		font-weight: bold;
+		font-size: 16px;
+	}
+	</style>
+</head>
+<body>
+<div id="page-top-outer">
+	<div id="page-top">
+		<div id="logo">
+		<a href=""><img src="images/shared/logo.png" width="156" height="40" alt="" /></a>
+		</div>
+	</div>
+</div>
+<div class="clear">&nbsp;</div>
+
+<!--  start nav-outer-repeat................................................. START -->
+<div class="nav-outer-repeat">
+<!--  start nav-outer -->
+<div class="nav-outer">
+	<div class="nav">
+		<div class="table">
+			<ul class="select"><li><a id="config" href="#nogo"><b>Config</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="current"><li><a id="news" href="#nogo"><b>News</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="select"><li><a id="about" href="#nogo"><b>About</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<ul class="select"><li><a id="calendar" href="#nogo"><b>Calendar</b></a></li></ul>
+			<div class="nav-divider">&nbsp;</div>
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+<div class="clear"></div>
+<!--  start nav-outer -->
+</div>
+<!--  start nav-outer-repeat................................................... END -->
+
+ <div class="clear"></div>
+
+<!-- start content-outer -->
+<div id="content-outer">
+<!-- start content -->
+<div id="content">
+
+	<!--  start page-heading -->
+	<div id="page-heading">
+		<h1>News</h1>
+	</div>
+	<!-- end page-heading -->
+
+	<table border="0" width="100%" cellpadding="0" cellspacing="0" id="content-table">
+	<tr>
+		<th rowspan="3" class="sized"><img src="images/shared/side_shadowleft.jpg" width="20" height="300" alt="" /></th>
+		<th class="topleft"></th>
+		<td id="tbl-border-top">&nbsp;</td>
+		<th class="topright"></th>
+		<th rowspan="3" class="sized"><img src="images/shared/side_shadowright.jpg" width="20" height="300" alt="" /></th>
+	</tr>
+	<tr>
+		<td id="tbl-border-left"></td>
+		<td>
+		<div id="content-table-inner">
+			<div id="table-content">
+			<h3>2011/09/11</h3>
+			カレンダーの表示形式をグリッド形式とリスト形式から選択できるようにしました。<br />
+			<br />
+			<br />
+			<h3>2011/03/27</h3>
+			バックグラウンドで動作(常駐)するのをやめました。<br />
+			通知の際にTwitterへtweetするボタンを追加しました。<br />
+			バージョンアップした際に更新された事を通知するようにしました。<br />
+			<br />
+			<br />
+			<h3>2011/03/10</h3>
+			ブラウザウィンドウを開いていなくてもバックグラウンドで動作するようにしました。<br />
+			<br />
+			<br />
+			<h3>2011/02/23</h3>
+			イベントカレンダーページに参加予定イベントをGoogleカレンダーに追加するボタンを追加しました。<br />
+			ATNDページの表示が遅くなってしまう問題を修正しました。<br />
+			<br />
+			<br />
+			<h3>2011/01/28</h3>
+			ユーザーページ(http://atnd.org/users/show/*)で[この管理者のイベントは通知する]ボタンが表示されない問題を修正しました。<br />
+			<br />
+			<br />
+			<h3>2010/12/20</h3>
+			定員を設定していないイベントでも満席通知してしまう問題を修正しました。<br />
+			<br />
+			<br />
+			<h3>2010/11/07</h3>
+			作成したイベントが満席になった場合に通知する機能を追加しました。<br />
+			<br />
+			<br />
+			<h3>2010/11/04</h3>
+			ATNDのイベントページにイベント会場までの経路案内ボタンを追加しました。<br />
+			<br />
+			<br />
+			<h3>2010/11/02</h3>
+			通知ウィンドウの通知メッセージをクリックすると各イベントのWebページを開くようにしました。<br />
+			また、通知ウィンドウのアイコンをクリックするとイベントカレンダーを開くようにしました。<br />
+			設定画面の備忘通知チェックボックスが保存されない問題を修正しました。<br />
+			ATND NotifyをインストールしてユーザIDが設定されるとイベントカレンダーが更新された事を通知するようにしました。<br />
+			開催日時を備忘通知する際に開催時間もメッセージ内容に含めて通知するようにしました。<br />
+			特定キーワードを含むイベントを通知する機能はイベント名にキーワードが含まれているもののみを抽出対象としました<br />
+			<br />
+			<br />
+			<h3>2010/10/31</h3>
+			設定画面の設定値を自動保存するようにしました。<br />
+			ユーザIDはATNDのページでログインすると自動的に設定されるようにしました。<br />
+			設定画面からユーザID、監視間隔、通知ウィンドウを表示する時間の項目を削除しました。<br />
+			イベントカレンダーにてユーザの参加したイベントを自動的に表示するようにしました。<br />
+			イベントカレンダーにてユーザの参加するイベントは黄色枠にし、最近通知されたイベントは赤色枠にして表示するようにしました。<br />
+			<br />
+			<br />
+			<h3>2010/10/28</h3>
+			特定キーワードを含むイベントを通知する機能で複数キーワードを入力できるようにしました。<br />
+			通知ウィンドウが複数開いていたのを1キーワードにつき1通知ウィンドウのみを表示するようにしました。<br />
+			イベントカレンダーにて最近通知されたイベントは該当日を黄色枠にしました。<br />
+			イベントカレンダーにてイベントリンクのツールチップでイベントの概要をわかるようにしました。<br />
+			<br />
+			<br />
+			<h3>2010/10/26</h3>
+			イベントの予定をカレンダー表示する機能を追加しました。<br />
+			<br />
+			<br />
+			<h3>2010/10/21</h3>
+			特定キーワードを含むイベントが作られた場合に通知する機能を追加しました。<br />
+			（イベントは直近３ヶ月を検索します。）<br />
+			<br />
+			<br />
+			<h3>2010/10/18</h3>
+			複数のイベントを監視/通知することが出来るようにしました。<br />
+			ユーザ設定、イベントIDの設定を設定画面ではなく、ATNDのWeb画面上にボタン/リンクを埋め込みそれをクリックすることで設定できるようにしました。
+			<br />
+			<br />
+			<h3>2010/10/16</h3>
+			ATND Notifyを作成しました。
+			</div>
+			<div class="clear"></div>
+		</div>
+		</td>
+		<td id="tbl-border-right"></td>
+	</tr>
+	<tr>
+		<th class="sized bottomleft"></th>
+		<td id="tbl-border-bottom">&nbsp;</td>
+		<th class="sized bottomright"></th>
+	</tr>
+	</table>
+	<div class="clear">&nbsp;</div>
+</div>
+<!--  end content -->
+<div class="clear">&nbsp;</div>
+</div>
+<!--  end content-outer -->
+<div class="clear">&nbsp;</div>
+<div id="footer">
+	<div id="footer-left">AtndNotify &copy; Copyright <a href="http://twitter.com/bluerabbit777jp" target="_blank">@bluerabbit777jp</a>. All rights reserved.</div>
+	<div class="clear">&nbsp;</div>
+</div>
+</body>
+</html>

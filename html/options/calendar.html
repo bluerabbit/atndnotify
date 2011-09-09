@@ -24,109 +24,35 @@
 
 		createGoogleCalendarLink();
 
-		if (options.calenderType == "list") {
-			createListCalender(showDate.getFullYear(), showDate.getMonth()+1);						
-			bindEvent2List(eventList);
-		} else {
-			createGridCalender(showDate.getFullYear(), showDate.getMonth()+1);			
-			bindEvent2Grid(eventList);
-		}
+		createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+		bindEvent(eventList);
 
 		$('#back').click(function () {
 			showDate.setMonth(showDate.getMonth()-1);
-			if (options.calenderType == "list") {
-				createListCalender(showDate.getFullYear(), showDate.getMonth()+1);						
-				bindEvent2List(eventList);
-			} else {
-				createGridCalender(showDate.getFullYear(), showDate.getMonth()+1);			
-				bindEvent2Grid(eventList);
-			}
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
 		});
 
 		$('#presentMonth').click(function () {
 			showDate = new Date();
 			showDate = new Date(showDate.getFullYear(), showDate.getMonth(), 1);
-			if (options.calenderType == "list") {
-				createListCalender(showDate.getFullYear(), showDate.getMonth()+1);						
-				bindEvent2List(eventList);
-			} else {
-				createGridCalender(showDate.getFullYear(), showDate.getMonth()+1);			
-				bindEvent2Grid(eventList);
-			}
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
 		});
 
 		$('#next').click(function () {
 			showDate.setMonth(showDate.getMonth()+1);
-			if (options.calenderType == "list") {
-				createListCalender(showDate.getFullYear(), showDate.getMonth()+1);						
-				bindEvent2List(eventList);
-			} else {
-				createGridCalender(showDate.getFullYear(), showDate.getMonth()+1);			
-				bindEvent2Grid(eventList);
-			}
+			createCalender(showDate.getFullYear(), showDate.getMonth()+1);
+			bindEvent(eventList);
 		});
 	});
 
-	function createListCalender(year, month) {
+	function createCalender(year, month) {
 		$("#caption").text(year + "年" + month + "月");
 		var list = createCalenderDateList(year, month);
 		var table = $("#cal");
 		table.find("tr[class!='dow']").remove();
-		table.find("th").remove();
-
-		table.find("tr[class='dow']").append("<th style='width:30'>日付</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>イベント情報</th>");
-
-		var now = new Date();
-		list.forEach(function (date, i) {
-			var tr = $('<tr>');
-			var id = toYyyyMmDd(date);
-
-			var td_date = $('<td>').attr('id', id +'_date');
-
-			if (date.getMonth()+1 == month) {
-				td_date.append($('<span>').addClass('span_date').text(date.getMonth()+1 + "/" + date.getDate() + "(" + getDayText(date.getDay()) + ")"));
-			} else {
-				td_date.append($('<span>').addClass('span_date_other_month').text(date.getMonth()+1 + "/" + date.getDate() + "(" + getDayText(date.getDay()) + ")"));
-			}
-
-			var td_event = $('<td>').attr('id', id);
-			td_event.addClass('event');
-
-			if (date.getDay() == 0) {
-				td_date.addClass('sun');
-			} else if (date.getDay() == 6) {
-				td_date.addClass('sat');
-			}
-			if (now.toDateString() == date.toDateString()) {
-				td_date.addClass('today');
-				td_event.addClass('today');
-			}
-
-			tr.append(td_date);
-			tr.append(td_event);
-			table.append(tr);
-		});
-	}
-
-	function createGridCalender(year, month) {
-		$("#caption").text(year + "年" + month + "月");
-		var list = createCalenderDateList(year, month);
-		var table = $("#cal");
-		table.find("tr[class!='dow']").remove();
-		table.find("th").remove();
-
-		table.find("tr[class='dow']").append("<th style='width:30' class='sun'>日</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>月</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>火</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>水</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>木</th>");
-		table.find("tr[class='dow']").append("<th style='width:30'>金</th>");
-		table.find("tr[class='dow']").append("<th style='width:30' class='sat'>土</th>");
-
 		var tr = $('<tr>');
-		tr.attr('class','cell');
-
 		var now = new Date();
 		list.forEach(function (date, i) {
 		var id = toYyyyMmDd(date);
@@ -149,12 +75,11 @@
 		if ((i+1)%7 == 0) {
 			table.append(tr);
 			tr = $('<tr>');
-			tr.attr('class','cell');
 		}
 		});
 	}
 
-	function bindEvent2Grid(eventList) {
+	function bindEvent(eventList) {
 		var userEventMap = new EventMap(options.user_events);
 		eventList.forEach(function (event, i){
 			var cell = $("#" + toYyyyMmDd(Atnd.toDate(event.started_at)));
@@ -166,17 +91,12 @@
 				ul = $('<ul>');
 			}
 			var li = $('<li>');
-			var link = $('<a>');
+			var link = $('<a>').text(getEventTimeText(event));
 			if (event.attention) {
 				// 通知直後のイベントは注目させる
 				cell.addClass('attention');
-				link.text(getEventTimeText(event));
-				li.append("<img src='images/symbol_new.gif'>");
 				event.attention = false;
-			} else {
-				link.text(getEventTimeText(event));				
 			}
-
 			link.attr('href', 'http://atnd.org/events/' + event.event_id).attr('target', '_blank');
 			link.attr('title', '[' + event.title + ']\n' + '参加者:' + (event.accepted + event.waiting) + '/' + event.limit + '\n'+ event.catch + '\n' + event.place + '\nby '+ event.owner_nickname);
 			// 参加予定のイベントは注目させる
@@ -184,56 +104,8 @@
 			if (userEventMap.get(event.event_id) != null) {
 				cell.addClass('user_event');
 				link.attr('title',link.attr('title') + '\n(参加登録済み)');
-				li.append("<img src='images/symbol_joined.gif'>");
 			}
 			li.append(link);
-			ul.append(li);
-			if (cell.find('ul').length == 0) {
-				cell.append(ul);
-			}
-		});
-		options.save();
-	}
-
-	function bindEvent2List(eventList) {
-		var userEventMap = new EventMap(options.user_events);
-		eventList.forEach(function (event, i){
-			var cell = $("#" + toYyyyMmDd(Atnd.toDate(event.started_at)));
-			var cell_dt = $("#" + toYyyyMmDd(Atnd.toDate(event.started_at)) + "_date");
-			if (cell.length == 0) {
-				return;
-			}
-			var ul = cell.find('ul');
-			if (ul.length == 0) {
-				ul = $('<ul>');
-			}
-			var li = $('<li>');
-			var link = $('<a>');
-			if (event.attention) {
-				// 通知直後のイベントは注目させる
-				cell.addClass('attention');
-				cell_dt.addClass('attention');
-				// link.text(getEventTimeText(event) + " " + event.title + "(" + event.address + ")");
-				link.text(getEventTimeText(event) + " " + event.title);
-				li.append("<img src='images/symbol_new.gif'>");
-				event.attention = false;
-			} else {
-				// link.text(getEventTimeText(event) + " " + event.title + "(" + event.address + ")");				
-				link.text(getEventTimeText(event) + " " + event.title);
-			}
-
-			link.attr('href', 'http://atnd.org/events/' + event.event_id).attr('target', '_blank');
-			link.attr('title', '[' + event.title + ']\n' + '参加者:' + (event.accepted + event.waiting) + '/' + event.limit + '\n'+ event.catch + '\n' + event.place + '\nby '+ event.owner_nickname);
-			// 参加予定のイベントは注目させる
-			var isAttention = false;
-			if (userEventMap.get(event.event_id) != null) {
-				cell.addClass('user_event');
-				cell_dt.addClass('user_event');
-				link.attr('title',link.attr('title') + '\n(参加登録済み)');
-				li.append("<img src='images/symbol_joined.gif'>");
-			}
-			li.append(link);
-			li.append($('<span>').addClass('span_event_address').text(" [ " + event.address + " ]"));
 			ul.append(li);
 			if (cell.find('ul').length == 0) {
 				cell.append(ul);
@@ -251,15 +123,7 @@
 				text += endDate.toLocaleTimeString().substring(0, 5);
 			}
 		}
-		//added title and address
-		//text += " " + event.title + "(" + event.address + ")"
-		
 		return text;
-	}
-
-	function getDayText(day) {
-		dayArray = ['日','月','火','水','木','金','土'];
-		return dayArray[day];
 	}
 
 	function createCalenderDateList(year, month) {
@@ -371,15 +235,13 @@
 			<table id="cal">
 				<caption id="caption"></caption>
 				<tr class="dow">
-<!-- 					<th style="width:30" class="sun">日</th>
+					<th style="width:30" class="sun">日</th>
 					<th style="width:30" >月</th>
 					<th style="width:30" >火</th>
 					<th style="width:30" >水</th>
 					<th style="width:30" >木</th>
 					<th style="width:30" >金</th>
-					<th style="width:30"  class="sat">土</th> -->
-<!-- 					<th style="width:30">日付</th>
-					<th style="width:30">イベント情報</th> -->
+					<th style="width:30"  class="sat">土</th>
 				</tr>
 			</table>
 			</div>

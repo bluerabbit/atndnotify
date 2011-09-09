@@ -58,10 +58,6 @@
 			var link = $('<a>').attr('target', '_blank').attr('href', 'http://atnd.org/users/' + owner.user_id).text(owner.nickname);
 			$('#ownerList').append($('<li>').append(link));
 		});
-		
-		$("input[name='calenderType']").val([options.calenderType]);
-		$("input[name='calenderType']").change(save);
-		
 	});
 
 	function save() {
@@ -77,7 +73,6 @@
 			}
 		});
 		options.dateNotifyList = dateNotifyList;
-		options.calenderType = $("input[name='calenderType']:checked").val();
 
 		options.save();
 		setTimeout(function(){
@@ -214,14 +209,6 @@
 				<td></td>
 			</tr>
 			<tr>
-				<th valign="top">カレンダー表示形式:</th>
-				<td>
-					<input name="calenderType" type="radio" id="calenderGrid" value="grid" checked/>グリッド形式
-					<input name="calenderType" type="radio" id="calenderList" value="list" />リスト形式
-				</td>
-				<td></td>
-			</tr>
-			<tr>
 				<th valign="top">通知する管理者:</th>
 				<td><ul id="ownerList"></ul></td>
 				<td></td>
@@ -258,13 +245,6 @@
 						<div class="right">
 							<h5>備忘通知</h5>
 							参加予定のイベントの開催日が近づくと備忘通知します。
-						</div>
-						<div class="clear"></div>
-						<div class="lines-dotted-short"></div>
-						<div class="left"><a href=""><img src="images/forms/icon_plus.gif" width="21" height="21" alt="" /></a></div>
-						<div class="right">
-							<h5>カレンダー表示形式</h5>
-							カレンダーの表示形式を設定します。
 						</div>
 						<div class="clear"></div>
 						<div class="lines-dotted-short"></div>

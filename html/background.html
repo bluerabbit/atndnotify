@@ -312,6 +312,9 @@ chrome.extension.onRequest.addListener(function(message, sender, sendResponse){
 		latlngToAddress(message.lat, message.lon, function (fromAddress) {
 			sendResponse(fromAddress);
 		});
+    } else if (message.id == 'window.open') {
+        window.open(message.url);
+        sendResponse();
 	} else {
 		// notification.html
 		sendResponse(notification.getItem(message.id));

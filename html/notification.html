@@ -66,6 +66,12 @@ chrome.extension.sendRequest({id:location.hash.slice(1)}, function(item){
 		$('#title').text('[' + item.title + ']');
 		$('#message').text(item.msg);
 	}
+
+    // ブラウザを起動していない時に通知があった場合でもリンクからページを開けるようにbackgroundからwindowを開く
+   	$('a').click(function () {
+        chrome.extension.sendRequest({id:'window.open', url:$(this).attr('href')});
+   	});
+
 });
 
 function tweet(message) {
@@ -89,7 +95,7 @@ function tweet(message) {
             <br />
             <div id="tweet" style="display:none;padding:5px;">
                 <a id="tweetLink" target="_blank" ><img src="/images/tweet.png" /></a>
-            <div>
+            </div>
         </p>
     </div>
 </div>

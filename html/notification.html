@@ -67,17 +67,29 @@ chrome.extension.sendRequest({id:location.hash.slice(1)}, function(item){
 		$('#message').text(item.msg);
 	}
 
-    // ブラウザを起動していない時に通知があった場合でもリンクからページを開けるようにbackgroundからwindowを開く
-   	$('a').click(function () {
-        chrome.extension.sendRequest({id:'window.open', url:$(this).attr('href')});
-   	});
-
+    anchorEventBackgroundWindowOpen();
 });
 
 function tweet(message) {
 	var tweet = encodeURIComponent(message + ' #atndnotify http://goo.gl/xeCe');
 	$('#tweetLink').attr('href', 'http://twitter.com/home/?status=' + tweet);
 	$('#tweet').show();
+}
+
+function anchorEventBackgroundWindowOpen() {
+    // ブラウザを起動していない時に通知があった場合でもリンクからページを開けるようにbackgroundからwindowを開く
+    $('a').each(function (i, e) {
+        var $a = $(e);
+        $a.attr('uri', $a.attr('href'));
+        $a.attr('href', "#"); // backgroundで開くためhrefは無効化
+        $a.attr('window_name', $a.attr('target') || '_blank');
+        $a.attr('target', '');
+        $a.click(function () {
+            chrome.extension.sendRequest({id:'window.open',
+                                          url:$(this).attr('uri'),
+                                          target:$(this).attr('window_name')});
+        });
+    });
 }
 </script>
 </head>
@@ -88,13 +100,13 @@ function tweet(message) {
     </div>
     <div class="text">
         <p>
-            <a id="link" target="_blank">
+            <a id="link" href="#" target="link">
                 <span id="title" ></span><br />
                 <span id="message" ></span>
             </a>
             <br />
             <div id="tweet" style="display:none;padding:5px;">
-                <a id="tweetLink" target="_blank" ><img src="/images/tweet.png" /></a>
+                <a id="tweetLink" target="tweet" ><img src="/images/tweet.png" /></a>
             </div>
         </p>
     </div>
